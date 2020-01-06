@@ -1,0 +1,41 @@
+post:
+  summary: 既契約サイトSSOAPI
+  description: |
+    既契約サイトSSO用の認証情報を取得する。
+
+    取得結果は、暗号化のうえ返却する。（※暗号化方式は、DLS様ご提供の暗号化ライブラリを採用）
+
+    暗号化の対象は、DLS様の設計書「健康アプリ⇒既契約サイトＳＳＯインターフェイス.xlsx」にて、暗号化「Yes」となっている項目とする。
+
+    | No | 区分   | エラー条件                             | エラーメッセージ           |
+    |----|--------|----------------------------------------|----------------------------|
+    | 1  | global | 運用で端末が利用停止された場合         | サービスをご利用できません |
+
+    ***
+
+  operationId: authContractorSso
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+
+  tags:
+    - all
+    - Sprint10
+
+  responses:
+    200:
+      description: 既契約サイトSSO認証情報を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AuthContractorSso'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

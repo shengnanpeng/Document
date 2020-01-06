@@ -1,0 +1,61 @@
+get:
+#  tags:
+#    - Sprint4
+#    - all
+  summary: ヘルプ詳細取得API
+  description: |
+    [処理概要]
+
+    CMSからコンテンツを取得する
+
+    [呼び出し理由]
+
+    - ヘルプ画面で使い方コンテンツを表示するため
+    - ヘルプ画面で利用規約コンテンツを表示するため
+    - ヘルプ画面で個人情報保護コンテンツを表示するため
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                             | エラーメッセージ           |
+    |----|--------|----------------------------------------|----------------------------|
+    | 1  | fields | contentTypeが未指定の場合              | コンテンツタイプは、必須項目です    |
+    | 2  | global | 存在しないcontentTypeを指定した場合    | 該当のコンテンツがありません   |
+    | 3  | global | 運用で端末が利用停止された場合         | サービスをご利用できません |
+
+    ***
+  operationId: cmsHelpDetailRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: query
+      name: contentType
+      description: |
+        コンテンツタイプを指定する
+
+        - "01": 「FaceAIの説明」の詳細コンテンツ
+        - "02": 「抽選方法・チケットの利用方法」の詳細コンテンツ
+        - "03": 「カロリーチェックについて」の詳細コンテンツ
+        - "04": 「健康年齢チェックについて」の詳細コンテンツ
+        - "05": 「疾病リスクチェックについて」の詳細コンテンツ
+        - "06": 「お薬手帳について」の詳細コンテンツ
+        - "07": 利用規約詳細
+        - "08": 個人情報保護法詳細
+      required: true
+      type: string
+  responses:
+    200:
+      description: |
+        使い方コンテンツ情報
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/CmsHelpDetailRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

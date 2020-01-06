@@ -1,0 +1,150 @@
+post:
+  summary: 食事アドバイス取得API
+  description: |
+    [処理概要]
+    
+    トークンが期限切れ時のみ実施
+    
+    - SOMCのログインAPIを呼び、新しいトークンを発行する
+    
+    上記処理完了後実施
+
+    - SOMCの食事アドバイス取得APIを呼び、インプットの食事に対するアドバイス、栄養素情報を取得し、返却する
+    - 該当ユーザーの注意する栄養素を「注意する栄養素」テーブルから取得する
+
+    ※mealTypeは以下の条件からCoreで判断する
+    
+    - 条件の時間帯は下記となる
+    
+      - 5:00:00-10:59:59：朝食
+    
+      - 11:00:00-16:59:59：昼食
+    
+      - 17:00:00-4:59:59：夕食
+
+    [呼出理由]
+    
+    食事内容を登録し、食事アドバイスを取得するため
+    
+    #### ポーズID一覧
+    | No | ポーズID      | ポーズ内容                            |
+    |----|---------------|---------------------------------------|
+    | 1  | 0             | 普通(教えるまたは応援するポーズ)      |
+    | 2  | 1             | 良い(笑顔)                            |
+    | 3  | 2             | 悪い(泣くまたは困った表情)            |
+
+
+    #### 栄養価一覧
+    | No | 栄養価コード  | 栄養価名          | 栄養価単位名称                 |
+    |----|---------------|-------------------|--------------------------------|
+    | 1  | energy        | エネルギー        | kcal                           |
+    | 2  | protein       | たんぱく質        | g                              |
+    | 3  | lipid         | 脂質              | g                              |
+    | 4  | carbohydrate  | 炭水化物          | g                              |
+    | 5  | calcium       | カルシウム        | mg                             |
+    | 6  | iron          | 鉄                | mg                             |
+    | 7  | vitamin_a     | ビタミンA         | μg                            |
+    | 8  | vitamin_e     | ビタミンE         | mg                             |
+    | 9  | vitamin_b1    | ビタミンB1        | mg                             |
+    | 10 | vitamin_b2    | ビタミンB2        | mg                             |
+    | 11 | vitamin_c     | ビタミンC         | mg                             |
+    | 12 | fiber         | 食物繊維          | g                              |
+    | 13 | saturated     | 飽和脂肪酸        | g                              |
+    | 14 | salt          | 塩分              | g                             |
+    
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                        | エラーメッセージ                            |
+    |----|--------|---------------------------------------------------|---------------------------------------------|
+    | 1  | fields | photoIdが未指定の場合                             | @@Fieldは必須項目です                       |
+    | 2  | fields | mealDateが未指定の場合                            | @@Fieldは必須項目です                       |
+    | 3  | fields | menusが未指定の場合                               | @@Fieldは必須項目です                       |
+    | 4  | fields | mealDateが正しくない場合                          | ご利用いただけない日付です                  |
+    | 5  | global | 運用で端末が利用停止された場合                    | サービスをご利用できません                  |
+
+    ***
+    - v1.0.1 2017/05/24
+      - メソッドをPOSTに修正
+      - 処理概要を修正
+      - レスポンスに注意する栄養素を追加
+      - 食事日の例を修正
+    - v1.0.2 2017/05/29
+      - レスポンスのadviceを削除し、poseIdを追加した
+    - v1.0.3 2017/05/30
+      - リクエストのmealTypeを削除し、dishId,classId,menuCodeを文字列型にした
+      - リクエストのoptionalをrequiredにした
+    - v1.0.4 2017/05/31
+      - リクエストのmealDateを食事日時とした
+    - v1.0.5 2017/05/31
+      - exampleにbewareNutrientを追加
+    - v1.0.6 2017/06/20
+      - レスポンスのstatusをinteger型に修正した
+      - intakeRatioの配列型をオブジェクト型に修正した
+      - normalRangeRatioの配列型をオブジェクト型に修正した
+    - v1.0.7 2017/07/27
+    - photoId未指定時はnullを指定する説明を記載
+
+  operationId: calorieCheckMealAdviceRetrieve
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - $ref: '#/parameters/Authorization'
+    - in: body
+      name: calorieCheckMealAdviceRetrieveBody
+      description: 食事アドバイス取得に必要な情報
+      required: true
+      schema:
+        required:
+          - photoId
+          - mealDate
+          - menus
+        properties:
+          photoId:
+            type: string
+            description: 写真ID。未指定時はnullを指定する
+          mealDate:
+            type: string
+            description: 食事日時（ISO8601形式："2008-05-01T02:00:00+09:00"）
+          menus:
+            type: array
+            description: 食事メニュー
+            items:
+              type: object
+              required:
+                - dishId
+                - classId
+                - menuCode
+              properties:
+                dishId:
+                  type: string
+                  description: >
+                    料理領域ID
+                    - 画像解析結果の料理領域と紐づかないメニュー指定（画像解析結果料理領域未検出によるキーワード検索でのメニュー追加）はdishIdをnullとしてリクエストする
+                classId:
+                  type: string
+                  description: >
+                    クラスID
+                     - 画像解析結果の料理領域と紐づかないメニュー指定（画像解析結果料理領域未検出によるキーワード検索でのメニュー追加）はclassIdをnullとしてリクエストする
+                menuCode:
+                  type: string
+                  description: >
+                    メニューコード
+                    - 画像解析結果の料理領域と紐づかないメニュー指定（画像解析結果料理領域未検出によるキーワード検索でのメニュー追加）は食事キーワード検索結果取得のメニューコードを指定してリクエストする
+              
+  tags:
+
+    - all
+    - Sprint4
+  responses:
+    200:
+      description: 食事アドバイス情報
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/CalorieCheckMealAdviceRetrieve'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

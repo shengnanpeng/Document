@@ -1,0 +1,69 @@
+post:
+  summary: 食事メニューキーワード検索API
+  description: |
+    [処理概要]
+    
+    検索キーワードを元に食事メニューコード、メニュー名、カロリーを返却する。
+
+    最大10個までの検索キーワード指定ができ、各キーワード毎に得られる食事メニューの最大個数は100個。
+    
+    キーワード毎に、最大100個の食事メニューデータを人気順で返す。
+    
+    食事メニュー名称の最大文字数は100文字。
+
+    [呼出理由]
+    
+    食事メニューのキーワード検索を行うため
+    
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                     | エラーメッセージ           |
+    |----|--------|--------------------------------|----------------------------|
+    | 1  | fields | searchWordsが未指定の場合      | キーワードを入力してください|
+    | 2  | global | レスポンスのmenusが全て0件の場合| 検索条件にマッチするメニューがありませんでした|
+    | 3  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v1.0.1 2017/05/23 メソッドをPOSTに修正
+    - v1.0.2 2017/08/08 バリデーションエラーNo.2を追加
+
+  operationId: calorieCheckMealMenuKeywordRetrieve
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - $ref: '#/parameters/Authorization'
+    - in: body
+      name: calorieCheckKeywordBody
+      required: true
+      description: |
+        食事メニューキーワード検索情報
+      schema:
+        required:
+          - searchWords
+        properties:
+          searchWords:
+            type: array
+            description: |
+              検索キーワード
+              - 最大10個を超えるキーワードは無視
+              - 1キーワードは指定必須
+              - 1キーワードあたり、50文字を超えた文字は無視
+            items:
+              type: string
+  tags:
+
+    - all
+    - Sprint4
+  responses:
+    200:
+      description: 食事メニューキーワード検索情報
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/CalorieCheckMealMenuKeywordRetrieve'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

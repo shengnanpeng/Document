@@ -1,0 +1,85 @@
+post:
+  summary: 友人紹介API
+  description: |
+    友人紹介メッセージ情報を取得する。
+
+    紹介ツール（メールやLINE）に応じたメッセージ情報を返却する。
+
+    紹介ツールの指定がない場合は、メール用のメッセージ情報を返却する。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件             | エラーメッセージ        |
+    |----|--------|------------------------|-------------------------|
+    | 1  | fields | relationが未指定の場合 | @@Fieldは、必須項目です |
+    | 2 | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+    | 3 | global | 担当者コードが未登録の場合 | お知らせ／担当コード未設定のため友人紹介機能がご利用いただけません |
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    - v0.2.2 2017/02/22 担当者コード未登録の場合のエラーメッセージを追加
+
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+    - v2.0.1 2018/01/08 リクエストにinvitationToolを追加
+  operationId: accountInvitationCreate
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: body
+      name: accountInvitationCreateBody
+      description: 友人紹介に必要な情報
+      required: true
+      schema:
+        properties:
+          relation:
+            type: integer
+            format: int32
+            description: |
+              紹介者との関係
+
+              - 1: ご家族・親戚
+              - 2: ご友人
+              - 3: 同僚
+              - 4: その他
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+          invitationTool:
+            type: string
+            description: |
+              紹介ツール
+              - 01: メール
+              - 02: LINE
+            enum:
+              - '01'
+              - '02'
+          message:
+            type: string
+            description: |
+               紹介者へのメッセージ
+        required:
+          - relation
+  tags:
+
+
+    - Sprint1-release
+    - Sprint11
+    - all
+  responses:
+    200:
+      description: 友人紹介メール情報を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AccountInvitationCreate'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

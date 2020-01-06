@@ -1,0 +1,87 @@
+post:
+  summary: トラッキングデバイス設定API
+  description: |
+    アクティビティデータを収集するトラッキングデバイスのIDを設定する。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                                                       | エラーメッセージ        |
+    |----|--------|----------------------------------------------------------------------------------|-------------------------|
+    | 1  | fields | trackingDeviceIdが未指定の場合                                                   | @@Fieldは、必須項目です |
+    | 2  | fields | trackingDeviceIdの値が、10・11・12・13・14・15・16・17・18・19・20・21以外の場合 | 不正なデバイスIDです    |
+    | 3  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/06 エラーメッセージ一覧No.2のエラー条件を「trackingDeviceIdの値が、10・11・12・13・14・15・16・17・18・19・20以外の場合」から「trackingDeviceIdの値が、10・11・12・13・14・15・16・17・18・19・20・21以外の場合 」に修正
+    - v1.0.3 2017/04/06 Sprint4に追加
+  operationId: activityTrackingDeviceCreate
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: body
+      name: activityTrackingDeviceCreateBody
+      description: |
+        設定するトラッキングデバイス情報を指定する。
+      required: true
+      schema:
+        type: object
+        required:
+          - trackingDeviceId
+        properties:
+          trackingDeviceId:
+            type: string
+            enum:
+              - '10'
+              - '11'
+              - '12'
+              - '13'
+              - '14'
+              - '15'
+              - '16'
+              - '17'
+              - '18'
+              - '19'
+              - '20'
+              - '21'
+            description: |
+              トラッキングデバイスIDを指定する。
+
+              - 10: Jawbone
+              - 11: FitBit
+              - 12: Misfit
+              - 13: Epson
+              - 14: Garmin
+              - 15: Polar
+              - 16: Adidas
+              - 17: TDK
+              - 18: Omron
+              - 19: GoogleFit
+              - 20: HealthKit
+              - 21: MOVEBAND
+  tags:
+
+
+    - Sprint1-release
+    - Sprint3
+    - Sprint4
+    - all
+  responses:
+    200:
+      description: |
+        トラッキングデバイスの設定結果を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/ActivityTrackingDeviceCreate'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

@@ -1,0 +1,70 @@
+get:
+  tags:
+    - Sprint4
+    - all
+  summary: Myコラム詳細取得API
+  description: |
+    [処理概要]
+
+    CMSから該当のコラムを取得し、返却する。
+    - Coreサーバのコンテンツ既読管理テーブルに下記データが存在する場合: 未読フラグをfalseで返却する
+      - ユーザー管理番号：ログインユーザー
+      - コンテンツID：パラメータのコンテンツID
+    - Coreサーバーのお気に入りコンテンツ管理テーブルに該当ユーザ・該当コラムのレコードがある場合: お気に入りフラグをtrueで返却する
+
+    - 当日のおすすめコラムの場合:
+      - タスク完了の場合: 本日のタスク完了フラグをtrueにする
+      - タスク未完了の場合: 本日のタスク完了フラグをfalseにする
+    - 当日のおすすめコラムでない場合: 本日のタスク完了フラグをnullにする
+
+    - 該当のコラムが更新された場合:
+      - 未読フラグをtrueにする
+
+    [呼び出し理由]
+
+    - アプリトップ画面コラムエリア押下で当日のおすすめコラムを表示する為。
+    - コラム一覧画面で任意のコラム欄を押下した際、対象コラムを表示する為。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                             | エラーメッセージ           |
+    |----|--------|----------------------------------------|----------------------------|
+    | 1  | fields | contentIdが未指定の場合                | コンテンツIDは、必須項目です    |
+    | 2  | global | 存在しないcontentIdを指定した場合      | 該当のコラムがありません   |
+    | 3  | global | 運用で端末が利用停止された場合         | サービスをご利用できません |
+
+    ***
+    - v1.0.1 2017/04/24 レスポンスのsubtitleをsubTitleに修正
+    - v1.0.2 2017/05/10 
+      - レスポンスの「subTitle」を「sub」に修正
+      - レスポンスの「relatedContentIds」を「relatedContent」に修正
+      - レスポンスにsubTitle、content、figure、relatedContentIds、title、source、thumbnailを追加
+    - v1.0.3 2017/05/24
+      - 処理概要を修正
+      - contentVersionを追加
+  operationId: columnDetailRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: query
+      name: contentId
+      description: コラムのコンテンツID
+      required: true
+      type: string
+  responses:
+    200:
+      description: |
+        コラムの詳細情報
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/ColumnDetailRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

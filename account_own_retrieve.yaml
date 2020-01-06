@@ -1,0 +1,69 @@
+get:
+  summary: アカウント情報取得API
+  description: |
+    ユーザーのアカウント情報を取得する。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                     | エラーメッセージ           |
+    |----|--------|--------------------------------|----------------------------|
+    | 1  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.0 2016/12/06 都道府県コード、身長、体重、目標体重、営業担当コード、更新回数、スタート時の体重をレスポンスに追加
+    - v0.2.1 2016/12/15 updateCountをversionIdに修正
+    - v0.2.2 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    - v0.2.3 2017/02/03 姓、名の説明の誤記を修正
+    - v1.0.1 2017/03/22 登録メールアドレス、選択コース区分選択、糖尿病フラグ、心疾患フラグ、高血圧フラグ、脳卒中フラグ、腎不全フラグ、肝硬変フラグ、識別番号区分、識別番号、利用状態コードをレスポンスに追加
+    - v1.0.2 2017/04/04 リクエストヘッダにCompanyCodeを追加
+    - v1.0.3 2017/04/24 
+      - レスポンスのheartDeseaseFlagをheartDiseaseFlagに修正
+      - レスポンスのuseStateCodeを削除
+    - v1.0.4 2017/04/26 Sprint4に追加
+    - v1.0.5 2017/05/08 「識別番号」を「証券・証書番号」に修正
+    - v1.0.6 2017/05/09
+      - 選択コースコードのコード値を修正
+      - サービス区分と本格アプリ利用開始日をレスポンスに追加
+    - v1.0.7 2017/05/12
+      - レスポンスにnameChangeEnableFlagを追加
+    - v1.0.8 2017/05/22
+      - レスポンスのserviceTypeの説明に未登録時"00"の記載を追加
+    - v1.0.9 2017/06/02
+      - レスポンスにinviteServiceCode, inviteUserMngNo, inviteRelationshipCodeを追加した
+    - v1.0.10 2017/06/07
+      - レスポンスにsecretQuestionCode, mailMagazineSubscriptionRequestFlagを追加
+    - v1.0.11 2017/06/13
+      - レスポンスにsecretQuestionAnswerを追加
+    - v1.0.12 2017/07/14
+      - [NFL対応] nameChangeEnableFlagがCompanyCodeが01の場合はtrueとなる記載を追加
+    - v1.0.13 2017/07/31
+      - レスポンスにenrolleeCheckCompletionDateを追加
+    - v2.0.0 2017/12/01
+      - レスポンスにorganizationManageCode, organizationCampaignCodeを追加
+  operationId: accountOwnRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+  tags:
+    - Sprint1-release
+    - Sprint3
+    - Sprint4
+    - Sprint5
+    - Sprint11
+    - all
+  responses:
+    200:
+      description: ユーザーのアカウント情報を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AccountOwnRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

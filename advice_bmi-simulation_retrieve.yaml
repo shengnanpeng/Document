@@ -1,0 +1,79 @@
+get:
+  summary: BMI変更シミュレーション結果取得API
+  description: |
+    [処理概要]
+    - 健診結果登録済の場合:
+      - 健康年齢シミュレーション画面にて入力された身長・体重を基にBMIを算出する。
+      - JMDC社のベイジアンネットワーク算出APIを呼ぶ。
+      - 性別・年齢・身長・体重・BMIを基に算出された健康年齢を取得する。
+    - 健診結果未登録の場合:
+      - 健康年齢シミュレーション画面にて入力された身長・体重を基にBMIを算出する。
+      - JMDC社の健康年齢簡易算出APIを呼ぶ。
+      - 性別・年齢・身長・体重・BMIを基に算出された健康年齢区分を取得する。
+
+    [呼出理由]
+
+    シミュレーション結果を描画する為。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                                     | エラーメッセージ                         |
+    |----|--------|----------------------------------------------------------------|------------------------------------------|
+    | 1  | fields | heightが未指定の場合                                           | 身長は必須項目です                       |
+    | 2  | fields | weightが未指定の場合                                           | 体重は必須項目です                       |
+    | 3  | global | heightが100cm未満、または250cmを超える場合                       | 身長は100cm以上250cm以下で入力してください |
+    | 4  | global | weightが20kg未満、または250kgを超える場合                       | 体重は20kg以上250kg以下で入力してください |
+    | 5  | global | 運用で端末が利用停止された場合                                 | サービスをご利用できません               |
+
+    ***
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/28 アウトプットにhealthAgeをintegerに変更
+    - v1.0.3 2017/05/01 エラーメッセージ一覧を修正
+    - v1.0.4 2017/05/19 エラーメッセージ3,4のエラー条件を変更。
+    - v1.0.5 2017/05/26 レスポンスにageを追加
+    - v1.0.6 2017/06/01 エラーメッセージ3,4を修正
+    - v1.0.7 2017/09/26 ageを要件に合わせて修正
+  operationId: adviceBmiSimulationRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: query
+      name: height
+      required: true
+      type: number
+      format: float
+      minimum: 0.0
+      maximum: 250.0
+      description: |
+        身長。単位：cm。小数点以下第一位。（例：170.6）
+    - in: query
+      name: weight
+      required: true
+      type: number
+      format: float
+      minimum: 0.0
+      maximum: 300.0
+      description: |
+        体重。単位：kg。小数点以下第一位。（例：60.5）
+  tags:
+
+    - Sprint3
+    - all
+  responses:
+    200:
+      description: |
+        - 健診結果登録済の場合：健康年齢、BMIの値を返却する
+        - 健診結果未登録の場合：健康年齢区分、BMIの値を返却する
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AdviceBmiSimulationRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

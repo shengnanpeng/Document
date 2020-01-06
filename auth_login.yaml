@@ -1,0 +1,63 @@
+post:
+  summary: ログイン認証API
+  description: |
+    「メールアドレス+パスワード」によるログイン認証を実行する。
+
+    認証に成功した場合、認証トークンを発行する。
+
+    認証トークンは発行日を含めて365日を過ぎた場合に失効する。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                                          | エラーメッセージ                                                           |
+    |----|--------|---------------------------------------------------------------------|----------------------------------------------------------------------------|
+    | 1  | global | 5回連続でメールアドレス、またはパスワードのいずれかが誤っている場合 | メールアドレス、パスワードが誤っているか、アカウントがロックされています。 |
+    | 2  | global | メールアドレスが誤っている場合                                      | メールアドレス、パスワードが誤っているか、アカウントがロックされています。 |
+    | 3  | global | パスワードが誤っている場合                                          | メールアドレス、パスワードが誤っているか、アカウントがロックされています。 |
+    | 4  | global | メールアドレスとパスワードのいずれも未入力の場合                    | メールアドレス、パスワードが誤っているか、アカウントがロックされています。 |
+    | 5  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/06 OpenIdに関する記載を削除
+    - v1.0.3 2017/04/10 エラーメッセージ一覧を修正
+    - v1.0.4 2017/05/08 Sprint4に追加
+    - V1.0.5 2017/05/11 レスポンスにsecretQuestionFlagを追加
+    - V1.0.6 2017/06/16 認証トークンの保持期間をImplementationNotesに追記
+  operationId: authLogin
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: body
+      name: authLoginBody
+      description: ログイン認証で必要なユーザの情報
+      required: true
+      schema:
+        properties:
+          email:
+            type: string
+            description: ユーザーのメールアドレス
+          loginPassword:
+            type: string
+            description: ユーザーが、事前登録したログインパスワード
+
+  tags:
+    - all
+    - Sprint4
+    - Sprint1-release
+
+  responses:
+    200:
+      description: 認証トークンを返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AuthLogin'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

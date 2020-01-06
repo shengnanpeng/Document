@@ -1,0 +1,69 @@
+post:
+  summary: 退会実行API
+  description: |
+    退会処理を実行する。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件               | エラーメッセージ        |
+    |----|--------|--------------------------|-------------------------|
+    | 1  | fields | reasonTypeが未指定の場合 | @@Fieldは、必須項目です |
+    | 2  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.0 2016/12/16 退会理由、退会種別をリクエストに追加
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+  operationId: accountResign
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: body
+      name: accountResignBody
+      description: 退会情報。
+      required: true
+      schema:
+        type: object
+        required:
+          - reasonType
+        properties:
+          reasonType:
+            type: string
+            enum:
+              - '10'
+              - '20'
+              - '30'
+              - '40'
+              - '99'
+            description: |
+              退会理由の種別。
+
+              - 10: アプリが使いづらい（重い・見づらい）
+              - 20: コンテンツが楽しくなかった
+              - 30: より良い類似アプリを使うことにした
+              - 40: 配信される通知が多い
+              - 99: その他（フリーワード100文字：空欄可）
+          reason:
+            type: string
+            description: 退会理由
+  tags:
+
+
+    - Sprint1-release
+    - all
+  responses:
+    200:
+      description: 退会処理結果を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AccountResign'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

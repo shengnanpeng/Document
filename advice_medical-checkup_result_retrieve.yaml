@@ -1,0 +1,58 @@
+get:
+  summary: 健診結果取得API
+  description: |
+    [処理概要]
+
+    - JMDC社の履歴情報取得APIを呼び、直近3回分の健診結果および基準値を取得する。
+    - サービスマスタのユーザー情報照会APIを呼び、「既往歴フラグ」を取得する。
+
+    [呼出理由]
+
+    - 直近3回分の健診結果をJMDC社サーバから取得する為。
+    - 健診結果画面に表示する「既往歴」を取得する為。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                   | エラーメッセージ           |
+    |----|--------|------------------------------|----------------------------|
+    | 1  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v1.0.1 2017/04/04
+      - heartDiseaseキー名の誤記を修正
+      - レスポンスのmedicalCheckupResultsを配列型にした
+      - healthTypeの階層を修正した
+      - リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/11 レスポンスのhealthTypeを文字列からコードに変更
+    - v1.0.3 2017/04/18 レスポンスのmedicalCheckupReferenceをoutOfRangeItemsに変更
+    - v1.0.4 2017/04/28 レスポンスのurinarySugarを削除
+    - v1.0.5 2017/04/28 レスポンスのhealthTypeのコード値を修正
+    - v1.0.5 2017/04/28 レスポンスのoutOfRangeItemsのコード値を修正
+    - v1.0.6 2017/05/17 レスポンスのoutOfRangeItemsを削除、columnの説明にコード値を記載
+    - v1.0.7 2017/05/24 レスポンスのhealthTypeをmeddataの要素にする
+    - v1.0.8 2017/06/02 exampleの誤記を修正
+    - v1.0.9 2017/07/20 exampleの誤記(healthType)を修正
+  operationId: adviceMedicalCheckupResultRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+  tags:
+    - Sprint3
+
+    - all
+  responses:
+    200:
+      description: 健診結果を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AdviceMedicalCheckupResultRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

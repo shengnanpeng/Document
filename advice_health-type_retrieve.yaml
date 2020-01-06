@@ -1,0 +1,65 @@
+get:
+  summary: 健康タイプ取得API
+  description: |
+    [処理概要]
+    
+    指定された健康タイプの説明文を取得する。
+    
+    [呼出理由]
+    
+    ユーザーの健康タイプ画面及び、他の健康タイプ画面にて、健康タイプの説明文を表示する為。
+    
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                | エラーメッセージ                                                      |
+    |----|--------|-------------------------------------------|-----------------------------------------------------------------------|
+    | 1  | fields | 00から09以外の健康タイプが指定された場合 | 正しい健康タイプを入力してください  |
+    | 2  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v1.0.1 2017/04/11 健康タイプ取得APIを作成
+    - v1.0.2 2017/04/28 インプット／アウトプットのhealthTypeのコード値を修正
+    - v1.0.3 2017/05/22 健康タイプの名称を変更
+    - v1.0.4 2017/05/24 レスポンスのhealthTypeExplanationを配列型から文字列型に修正
+    - v1.0.5 2017/07/05 健康タイプの名称を変更
+    - v1.0.6 2017/08/04 レスポンスパラメータに推奨コースタイプを追加
+    - v1.0.7 2017/08/18 推奨コースタイプの変数名をrecommendCourceTypeからrecommendCourseTypeに修正
+  operationId: adviceHealthTypeRetrieve
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - $ref: '#/parameters/Authorization'
+    - in: query
+      name: healthType
+      required: true
+      type: string
+      description: |
+        健康タイプ
+
+        - "00": All
+        - "01"：生活習慣病予備軍
+        - "02"：血圧に注意
+        - "03"：血液ドロドロ
+        - "04"：糖質に注意
+        - "05"：メタボ
+        - "06"：隠れメタボ
+        - "07"：血管老化
+        - "08"：肝臓弱り気味
+        - "09"：健康体
+  tags:
+
+    - Sprint3
+    - all
+  responses:
+    200:
+      description: 健康タイプの説明文を取得する。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AdviceHealthTypeRetrieve'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

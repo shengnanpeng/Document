@@ -1,0 +1,402 @@
+post:
+  summary: アカウント更新API
+  description: |
+    - ユーザーのアカウントを更新する。
+
+    - 家族紹介されたユーザーが登録した場合は、紹介した人にクローバーを付与する
+
+    - 登録メールアドレスは、変更不可
+
+    - 下記外部サービスのアカウント登録APIを呼び、払い出されたIDをコアサーバの外部アカウント管理テーブルに格納する
+      - DOCOMO（リボーンマジック）※プレミアムモードのみ実施
+      - JMDC（My健診アドバイス）※プレミアムモードのみ実施
+      - SOMC（カロリーチェック）※キャンペーンモード、プレミアムモードのいずれも実施
+
+    - 家族招待でのインセンティブ付与は13回までとする
+
+    招待コード（担当者コード）が指定された場合、下記の有効性判定処理をする。
+
+    - 1.紹介管理テーブル(排他ロック)で下記条件で指定招待コードが存在するか確認する
+      - ステータス「00:招待コード発行済」
+    - 2-1.招待コード指定時に、紹介管理テーブルに招待コード（担当者コード）が存在する場合、ステータスを「20:ユーザー登録済」、被招待者IDを「アクセスユーザー管理番号」に更新する
+    - 2-2.招待コード指定時に、紹介管理テーブルに招待コード（担当者コード）が存在しない場合、バリデーションエラーを返却する
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                                                                                                                                                    | エラーメッセージ                                                      |
+    |----|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------|
+    | 1  | fields | lastNameが未指定の場合                                                                                                                                                        | 姓(漢字)は必須項目です                                                |
+    | 2  | fields | firstNameが未指定の場合                                                                                                                                                       | 名(漢字)は必須項目です                                                |
+    | 3  | fields | lastKanaが未指定の場合                                                                                                                                                        | 姓(カナ)は必須項目です                                                |
+    | 4  | fields | firstKanaが未指定の場合                                                                                                                                                       | 名(カナ)は必須項目です                                                |
+    | 5  | fields | genderCodeが未指定の場合                                                                                                                                                      | 性別は必須項目です                                                    |
+    | 6  | fields | birthDateが未指定の場合                                                                                                                                                       | 生年月日は必須項目です                                                |
+    | 7  | fields | heightが未指定の場合                                                                                                                                                          | 身長は必須項目です                                                    |
+    | 8  | fields | weightが未指定の場合                                                                                                                                                          | 体重は必須項目です                                                    |
+    | 9  | global | appModeCodeが02でsecretQuestionCodeが未指定の場合                                                                                                                             | 秘密の質問は必須項目です                                              |
+    | 10 | global | appModeCodeが02でsecretQuestionAnswerが未指定の場合                                                                                                                           | 秘密の質問の回答は必須項目です                                        |
+    | 11 | global | appModeCodeが02でmailMagazineSubscriptionRequestFlagが未指定の場合                                                                                                            | メルマガ購読の有無を選択してください                                  |
+    | 12 | fields | versionIdが未指定の場合                                                                                                                                                       | バージョンIDは必須項目です                                            |
+    | 13 | fields | heightが0cm未満、または250cmを超える場合                                                                                                                                      | 身長は0cm以上250cm以下で入力してください                              |
+    | 14 | fields | weightが0kg未満、または300kgを超える場合                                                                                                                                      | 体重は0kg以上300kg以下で入力してください                              |
+    | 15 | fields | objectiveWeightが0kg未満、または300kgを超える場合                                                                                                                             | 目標体重は0kg以上300kg以下で入力してください                          |
+    | 16 | fields | startWeightが0kg未満、または300kgを超える場合                                                                                                                                 | 開始時体重は0kg以上300kg以下で入力してください                        |
+    | 17 | fields | firstNameの文字種別が全角以外の場合                                                                                                                                           | 姓(漢字)は全角で入力してください                                      |
+    | 18 | fields | lastNameの文字種別が全角以外の場合                                                                                                                                            | 名(漢字)は全角で入力してください                                      |
+    | 19 | global | firstNameとlastNameを合わせた文字数が60文字以上の場合                                                                                                                         | お名前は60文字未満で入力してください                                  |
+    | 20 | global | firstKanaとlastKanaを合わせた文字数が60文字以上の場合                                                                                                                         | フリガナは60文字未満で入力してください                                |
+    | 21 | fields | lastKanaの文字種別が全角カナ以外の場合                                                                                                                                        | 姓(カナ)は全角カナで入力してください                                  |
+    | 22 | fields | firstKanaの文字種別が全角カナ以外の場合                                                                                                                                       | 名(カナ)は全角カナで入力してください                                  |
+    | 23 | global | genderが1,2以外の場合                                                                                                                                                         | 性別を正しく入力してください                                          |
+    | 24 | global | birthDateが100年前の場合                                                                                                                                                      | 生年月日を正しく入力してください                                      |
+    | 25 | global | birthDateが正しくない日付フォーマットの場合                                                                                                                                   | 生年月日を正しく入力してください                                      |
+    | 26 | global | prefectureCodeが正しくないフォーマットの場合                                                                                                                                  | 都道府県コードを正しく入力してください                                |
+    | 27 | global | appModeCodeが02でsecretQuestionCodeが01、02、03、04以外の場合                                                                                                                 | 秘密の質問を正しく入力してください                                    |
+    | 28 | global | secretQuestionAnswerが登録済のハッシュ値と一致しない場合で、secretQuestionAnswerが4文字未満、または31文字以上、または文字種別が全角カタカナ以外の場合                                                                                     | 秘密の質問の回答は4文字以上30文字以下の全角カタカナで入力してください |
+    | 29 | global | appModeCodeが01でsalesRepresentativeCodeが7桁、または8桁のいずれでもない場合                                                                                                                                      | 招待コードを7桁、又は営業担当者コードを8桁で入力してください                               |
+    | 30 | global | appModeCodeが01でsalesRepresentativeCodeが7桁で招待コードが正しくない場合                                                                                                                                      | 招待コードが失効しました |
+    | 31 | global | appModeCodeが02でsalesRepresentativeCodeが8桁ではない場合                                                                                                                                      | 営業担当者コードは8桁で入力してください                               |
+    | 32 | global | salesRepresentativeCodeが8桁で担当者コードとして存在しない場合                                                                                                                | 担当者コードが一致しません。ご不明の場合は入力不要です。                                           |
+    | 33 | global | appModeCodeが02でmedicalHistoryFlagが未指定の場合                                                                                                                             | 既往歴有無を正しく入力してください                                    |
+    | 34 | global | appModeCodeが02でdiabeticFlagが未指定の場合                                                                                                                                   | 糖尿病を正しく入力してください                                        |
+    | 35 | global | appModeCodeが02でheartDeseaseFlagが未指定の場合                                                                                                                               | 心疾患を正しく入力してください                                        |
+    | 36 | global | appModeCodeが02でhighBloodPressureFlagが未指定の場合                                                                                                                          | 高血圧を正しく入力してください                                        |
+    | 37 | global | appModeCodeが02でapoplexyFlagが未指定の場合                                                                                                                                   | 脳卒中を正しく入力してください                                        |
+    | 38 | global | appModeCodeが02でrenalFailureFlagが未指定の場合                                                                                                                               | 腎不全を正しく入力してください                                        |
+    | 39 | global | appModeCodeが02でliverCirrhosisFlagが未指定の場合                                                                                                                             | 肝硬変を正しく入力してください                                        |
+    | 40 | global | 運用で端末停止された場合                                                                                                                                                      | サービスをご利用できません                                            |
+    | 41 | global | appModeCodeが02でsecretQuestionCodeが01、02、03，04以外の場合                                                                                                                 | 秘密の質問を正しく入力してください                                    |
+    | 42 | global | appModeCodeが02でcourseTypeが10、20、30、40、50、60以外の場合                                                                                                                 | 選択コースコードを正しく入力してください                              |
+    | 43 | global | appModeCodeが02かつ、courseTypeが10、20、30、40、50、60のどれかでmedicalHistoryFlagがtrueの場合                                                                               | 選択コースコードと既往歴有無フラグは両方指定することはできません      |
+    | 44 | global | appModeCodeが02かつ、diabeticFlag、heartDeseaseFlag、highBloodPressureFlag、apoplexyFlag、renalFailureFlag、liverCirrhosisFlagのどれかがtrueでmedicalHistoryFlagがfalseの場合 | 既往歴フラグと既往歴有無フラグの対応が正しくありません                |
+    | 45 | global | appModeCodeが02かつ、diabeticFlag、heartDeseaseFlag、highBloodPressureFlag、apoplexyFlag、renalFailureFlag、liverCirrhosisFlagのすべてがfalseでmedicalHistoryFlagがtrueの場合 | 既往歴フラグと既往歴有無フラグの対応が正しくありません                |
+    | 46 | global | inviteServiceCodeが指定され、inviteUserMngNoが未指定の場合                                                                                                                    | 紹介元ユーザ管理番号を正しく入力してください                          |
+    | 47 | global | inviteServiceCodeが指定され、inviteRelationshipCodeが未指定の場合                                                                                                             | 紹介元関係を正しく入力してください                                    |
+    | 48 | fields | inviteServiceCodeが01、02、03以外の場合                                                                                                                                       | 紹介サービスコードを正しく入力してください                            |
+    | 49 | fields | inviteRelationshipCodeが10、20、30、40、50以外の場合                                                                                                                          | 紹介元関係を正しく入力してください                                    |
+    | 50 | fields | appModeCodeが01、02以外の場合                                                                                                                                                | アプリコードを正しく入力してください                                   |
+    | 51 | global | CompanyCodeが00でorganizationManageCodeの文字数が17文字以上の場合                                                                                                             | 団体IDは16文字以下で入力してください                                   |
+    | 52 | global | CompanyCodeが01でorganizationManageCodeの文字数が17文字以上の場合                                                                                                             | 紹介代理店番号は16文字以下で入力してください                            |
+    | 53 | global | CompanyCodeが00、01以外かつ、organizationManageCodeの文字数が17文字以上の場合                                                                                                  | 団体管理コードは16文字以下で入力してください                            |
+    | 54 | global | CompanyCodeが00でorganizationCampaignCodeの文字数が17文字以上の場合                                                                                                           | キャンペーンコードは16文字以下で入力してください                        |
+    | 55 | global | CompanyCodeが00以外かつ、organizationCampaignCodeの文字数が17文字以上の場合                                                                                                    | 団体キャンペーンコードは16文字以下で入力してください                    |
+    | 56 | global | CompanyCodeが00でorganizationManageCodeが指定され、団体IDとして存在しない場合                                                                                               | 団体IDが一致しません。ご不明の場合は入力不要です。                                                 |
+    | 57 | global | CompanyCodeが01でorganizationManageCodeが指定され、紹介代理店番号として存在しない場合                                                                                               | 紹介代理店番号が一致しません。ご不明の場合は入力不要です。                                          |
+    | 58 | global | CompanyCodeが00、01以外かつ、organizationManageCodeが指定され、団体管理コードとして存在しない場合                                                                                    | 団体管理コードが一致しません。ご不明の場合は入力不要です。                                          |
+    | 59 | global | CompanyCodeが00でorganizationCampaignCodeが指定され、文字種別が半角以外の場合                                                                                                  | キャンペーンコードは半角で入力してください                             |
+    | 60 | global | CompanyCodeが00以外かつ、organizationCampaignCodeが指定され、文字種別が半角以外の場合                                                                                           | 団体キャンペーンコードは半角で入力してください                         |
+    | 61 | global | CompanyCodeが00でorganizationCampaignCodeが指定され、キャンペーンコードとして存在しない場合                                                                                  | キャンペーンコードが一致しません。ご不明の場合は入力不要です。                                      |
+    | 62 | global | CompanyCodeが00以外かつ、organizationCampaignCodeが指定され、団体キャンペーンコードとして存在しない場合                                                                           | 団体キャンペーンコードが一致しません。ご不明の場合は入力不要です。                                |
+
+    ***
+    - v0.2.0 2016/12/05 都道府県コード、身長、体重、目標体重、営業担当コード、更新回数、スタート時の体重、バリデーションフラグをリクエストパラメータに追加。リクエストパラメータは、画面上の必須項目を除きoptionalとした。
+    - v0.2.1 2016/12/15 updateCountをversionIdに修正
+    - v0.2.2 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    - v0.2.3 2017/02/03 姓、名の説明の誤記を修正
+    - v1.0.1 2017/03/24 秘密の質問、秘密の質問の回答、メルマガ購読希望フラグ、糖尿病フラグ、心疾患フラグ、高血圧フラグ、脳卒中フラグ、腎不全フラグ、肝硬変フラグ、選択コースコードをインプットパラメータに追加。レスポンスに本格アプリ利用開始日を追加
+    - v1.0.2 2017/04/04 リクエストヘッダにCompanyCodeを追加
+    - v1.0.3 2017/04/12
+      - Implementation Notesに説明を追記
+      - エラーメッセージ一覧にエラーメッセージを追記
+      - インプットの秘密の質問、秘密の質問の回答、メルマガ購読希望フラグ、糖尿病フラグ、心疾患フラグ、高血圧フラグ、脳卒中フラグ、腎不全フラグ、肝硬変フラグ、選択コースコードに説明を追記
+    - v1.0.4 2017/04/17 エラーメッセージ一覧の19,21～30の区分と19のエラーメッセージを修正
+    - v1.0.5 2017/04/18
+      - エラーメッセージ一覧にエラーメッセージのNo.20、23～33を修正、
+      - エラーメッセージ一覧にエラーメッセージのNo.9、21、34～74を追記
+      - インプットのsecretQuestionCode、secretQuestionAnswerに解説を追記
+    - v1.0.6 2017/04/19 エラーメッセージ一覧にエラーメッセージのNo.75、76、77、78を追記
+    - v1.0.7 2017/04/24 インプットのheartDeseaseFlagをheartDiseaseFlagに修正
+    - v1.0.8 2017/04/28 startWeightの説明を修正
+      - Sprint4に追加
+      - インプットのスタート時の体重、既往歴有無フラグ、糖尿病フラグ、心疾患フラグ、高血圧フラグ、脳卒中フラグ、腎不全フラグ、肝硬変フラグ、選択コースコードに説明を追記
+    - v1.0.9 2017/04/28
+      - startWeightの説明を修正
+      - エラーメッセージ一覧を修正
+    - v1.0.10 2017/05/08
+      - インプットの既往歴有無フラグ、糖尿病フラグ、心疾患フラグ、高血圧フラグ、脳卒中フラグ、腎不全フラグ、肝硬変フラグ、選択コースコードの説明を修正
+      - インプットに紹介サービスコード、紹介元ユーザ管理番号、紹介元関係を追加
+      - エラーメッセージ一覧にエラーメッセージのNo.90、91、92、93を追記
+      - Implementation Notesに説明を追記
+      - エラーメッセージ一覧のNo.25を修正
+    - v1.0.11 2017/05/09
+      - 選択コースコードのコート値を修正
+      - インプットの既往歴有無フラグ、糖尿病フラグ、心疾患フラグ、高血圧フラグ、脳卒中フラグ、腎不全フラグ、肝硬変フラグ、選択コースコード、紹介サービスコード、紹介元ユーザ管理番号、紹介元関係の説明を修正
+      - エラーメッセージ一覧を修正
+    - v1.0.12 2017/05/16
+      - salesRepresentativeCodeのエラーメッセージを修正
+    - v1.0.13 2017/05/18
+      - mailMagazineSubscriptionRequestFlagのエラーメッセージを修正
+    - v1.0.14 2017/06/02
+      - inviteServiceCode, inviteUserMngNo, inviteRelationshipCodeの説明を追加
+    - v1.0.15 2017/06/13
+      - secretQuestionAnswerの説明を追加
+    - v1.0.16 2017/06/23
+      - エラーメッセージを編集
+    - v1.0.17 2017/07/04
+      - accountOwnUpdateBodyのModelを修正。
+    - v2.0.1 2017/12/05
+      - accountOwnUpdateBodyのModelにorganizationManageCode, organizationCampaignCodeを追加
+      - エラーメッセージ一覧を修正
+    - v2.0.2 2017/01/03
+      - プレミアムユーザーとスタンダードユーザーの場合、SOMCアカウントを発行する旨を記載
+    - v2.0.3 2018/3/28
+      - 担当者コード、団体管理コード、団体キャンペーンコードにつき、リクエストがNULLの際の挙動を追記。
+  operationId: accountOwnUpdate
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: body
+      name: accountOwnUpdateBody
+      description: 更新するユーザのアカウント情報
+      required: true
+      schema:
+        properties:
+          validationFlag:
+            type: boolean
+            description: |
+              バリデーションフラグ
+              - true: バリデーションを行う場合
+              - false: サービスマスタへの更新を行う場合
+          firstName:
+            type: string
+            description: 名
+          lastName:
+            type: string
+            description: 姓
+          firstKana:
+            type: string
+            description: メイ（カタカナ）
+          lastKana:
+            type: string
+            description: セイ（カタカナ）
+          genderCode:
+            type: integer
+            format: int32
+            enum:
+              - 1
+              - 2
+            description: |
+              性別
+
+              - 1: 男性
+              - 2: 女性
+          birthDate:
+            type: string
+            description: |
+              生年月日（ISO8601形式: "1986-09-15"）
+
+              有効な範囲: 100年前の1月1日 ~ 当日
+
+              ※. 境界日（1917-01-01、当日）も含む。
+          prefectureCode:
+            type: string
+            description: 都道府県コード
+          height:
+            type: number
+            format: float
+            description: |
+              身長。単位：cm。小数点以下第一位。（例：170.6）。
+            minimum: 0.0
+            maximum: 250.0
+          weight:
+            type: number
+            format: float
+            description: |
+              体重。単位：kg。小数点以下第一位。（例：60.5）。
+            minimum: 0.0
+            maximum: 300.0
+          objectiveWeight:
+            type: number
+            format: float
+            description: |
+              目標体重。単位：kg。小数点以下第一位。（例：60.5）
+            minimum: 0.0
+            maximum: 300.0
+          startWeight:
+            type: number
+            format: float
+            description: |
+              スタート時の体重。単位：kg。小数点以下第一位。（例：60.5）
+            minimum: 0.0
+            maximum: 300.0
+          salesRepresentativeCode:
+            type: string
+            description: 営業担当コード。NULLの場合はサービスマスタから入力エラーが返却される為、空文字でリクエストすること。
+          versionId:
+            type: integer
+            format: int32
+            description: 更新時の排他制御に使用する。
+          secretQuestionCode:
+            type: string
+            description: |
+              秘密の質問。キャンペーンアプリの場合は値が入っていても無視をする
+              - "01":飼っているペットの名前
+              - "02":卒業した小学校名
+              - "03":小さい頃の夢
+              - "04":好きな食べ物
+          secretQuestionAnswer:
+            type: string
+            description: |
+              秘密の質問の回答。4文字以上30文字以内。全角カタカナ。キャンペーンアプリの場合は値が入っていても無視をする
+
+              秘密の質問の回答を設定値から変更しない場合は、アカウント情報取得APIで取得したハッシュ値をそのまま指定する。
+          mailMagazineSubscriptionRequestFlag:
+            type: boolean
+            description: |
+              メルマガ購読希望フラグ。キャンペーンアプリの場合は値が入っていても無視をする
+              - "true":購読希望あり
+              - "false":購読希望なし
+          medicalHistoryFlag:
+            type: boolean
+            description: |
+              既往歴有無フラグ
+              - キャンペーンアプリの場合は値が入っていても無視をする
+              - 設定変更しない場合は前回指定値を指定する
+                - "true":既往歴あり
+                - "false":既往歴なし
+          diabeticFlag:
+            type: boolean
+            description: |
+              糖尿病フラグ
+              - キャンペーンアプリの場合は値が入っていても無視をする
+              - 設定変更しない場合は前回指定値を指定する
+                - "true":既往歴あり
+                - "false":既往歴なし
+          heartDiseaseFlag:
+            type: boolean
+            description: |
+              心疾患フラグ
+              - キャンペーンアプリの場合は値が入っていても無視をする
+              - 設定変更しない場合は前回指定値を指定する
+                - "true":既往歴あり
+                - "false":既往歴なし
+          highBloodPressureFlag:
+            type: boolean
+            description: |
+              高血圧フラグ
+              - キャンペーンアプリの場合は値が入っていても無視をする
+              - 設定変更しない場合は前回指定値を指定する
+                - "true":既往歴あり
+                - "false":既往歴なし
+          apoplexyFlag:
+            type: boolean
+            description: |
+              脳卒中フラグ
+              - キャンペーンアプリの場合は値が入っていても無視をする
+              - 設定変更しない場合は前回指定値を指定する
+                - "true":既往歴あり
+                - "false":既往歴なし
+          renalFailureFlag:
+            type: boolean
+            description: |
+              腎不全フラグ
+              - キャンペーンアプリの場合は値が入っていても無視をする
+              - 設定変更しない場合は前回指定値を指定する
+                - "true":既往歴あり
+                - "false":既往歴なし
+          liverCirrhosisFlag:
+            type: boolean
+            description: |
+              肝硬変フラグ
+              - キャンペーンアプリの場合は値が入っていても無視をする
+              - 設定変更しない場合は前回指定値を指定する
+                - "true":既往歴あり
+                - "false":既往歴なし
+          courseType:
+            type: string
+            description: |
+              選択コースコード
+              - キャンペーンアプリの場合は値が入っていても無視をする
+              - 設定変更しない場合は前回指定値を指定する
+                - "01":健康維持コース
+                - "02":BMI改善コース
+                - "03":血圧改善コース
+                - "04":血糖改善コース
+                - "05":脂質改善コース
+                - "06":肝機能改善コース
+          appModeCode:
+            type: string
+            description: |
+              アプリモード
+              - キャンペーンアプリ、本格アプリどちらの画面から呼ばれたかに対応する下記のコード値を指定する
+                - "01":キャンペーンアプリ
+                - "02":本格アプリ
+          inviteServiceCode:
+            type: string
+            description: |
+              紹介サービスコード。本格アプリで友人紹介、家族招待、被保険者招待により、初期登録を行う場合に指定する。キャンペーンアプリの場合、初回登録時はnull、以降はアカウント情報取得APIで取得した値を指定する。
+              - "01":友人紹介
+              - "02":家族招待
+              - "03":被保険者招待
+          inviteUserMngNo:
+            type: string
+            description: |
+              紹介元ユーザ管理番号。本格アプリで友人紹介、家族招待、被保険者招待により、初期登録を行う場合に指定する。キャンペーンアプリの場合、初回登録時はnull、以降はアカウント情報取得APIで取得した値を指定する。
+          inviteRelationshipCode:
+            type: string
+            description: |
+              紹介元関係。本格アプリで友人紹介、家族招待、被保険者招待により、初期登録を行う場合に指定する。キャンペーンアプリの場合、初回登録時はnull、以降はアカウント情報取得APIで取得した値を指定する。
+              - "10":ご家族・親戚
+              - "20":ご友人
+              - "30":同僚
+              - "40":その他
+              - "50":被保険者
+          organizationManageCode:
+            type: string
+            description: |
+              団体管理コード。NULLの場合はサービスマスタから入力エラーが返却される為、空文字でリクエストすること。
+          organizationCampaignCode:
+            type: string
+            description: |
+              団体キャンペーンコード。NULLの場合はサービスマスタから入力エラーが返却される為、空文字でリクエストすること。
+        required:
+          - validationFlag
+          - firstName
+          - lastName
+          - firstKana
+          - lastKana
+          - genderCode
+          - birthDate
+          - height
+          - weight
+          - startWeight
+          - versionId
+          - secretQuestionCode
+          - secretQuestionAnswer
+          - mailMagazineSubscriptionRequestFlag
+          - medicalHistoryFlag
+          - diabeticFlag
+          - heartDiseaseFlag
+          - highBloodPressureFlag
+          - apoplexyFlag
+          - renalFailureFlag
+          - liverCirrhosisFlag
+          - courseType
+          - appModeCode
+          - inviteServiceCode
+          - inviteUserMngNo
+          - inviteRelationshipCode
+  tags:
+
+
+    - Sprint1-release
+    - all
+    - Sprint3
+    - Sprint4
+    - Sprint11
+  responses:
+    200:
+      description: アカウント更新結果を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AccountOwnUpdate'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

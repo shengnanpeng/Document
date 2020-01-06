@@ -1,0 +1,50 @@
+get:
+  tags:
+
+
+    - Sprint1-release
+    - all
+
+  summary: アクティビティデータ最終登録日時取得API
+  description: |
+
+    [処理概要]
+
+    活動量計と同期した最終日時を返却する。
+
+    アクティビティデータ未登録の場合はユーザー登録日時を返却する（呼び出し側で最終登録日時以前のアクティビティデータを登録しないようにするため）。
+
+    [呼出理由]
+
+    アクティビティデータ登録済の日時を取得するため。
+
+    #### エラーメッセージ一覧
+    | No | 区分 | エラー条件 | エラーメッセージ |
+    |----|------|------------|------------------|
+    | 1  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+  operationId: activityLastsyncDateRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+  responses:
+    200:
+      description: 活動量計と同期した最終日時を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/ActivityLastsyncDateRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

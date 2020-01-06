@@ -1,0 +1,74 @@
+get:
+  tags:
+
+
+    - Sprint1-release
+    - all
+  summary: 週別BMI取得API
+  description: |
+    指定期間の週別（日曜日～土曜日）のBMIと体重の実績を取得する。
+
+    取得結果のソート順は、下記とする。
+    1. 記録週の降順
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                         | エラーメッセージ                                                      |
+    |----|--------|------------------------------------|-----------------------------------------------------------------------|
+    | 1  | fields | monthFromが未指定の場合            | @@Fieldは、必須項目です                                               |
+    | 2  | fields | monthFromが、ISO8601形式でない場合 | @@fieldの日付形式が不正です。ISO8601形式（YYYY-MM）で指定してください |
+    | 3  | fields | monthToが未指定の場合              | @@Fieldは、必須項目です                                               |
+    | 4  | fields | monthToが、ISO8601形式でない場合   | @@fieldの日付形式が不正です。ISO8601形式（YYYY-MM）で指定してください |
+    | 5  | global | monthFromがmonthTo以降の日付の場合 | 指定された期間が不正です                                              |
+    | 6  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+  operationId: activityWeeklyBmiRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: query
+      name: monthFrom
+      description: |
+        BMI情報の取得開始月（ISO8601形式："2016-11"）
+      required: true
+      type: string
+    - in: query
+      name: monthTo
+      description: |
+        BMI情報の取得終了月（ISO8601形式："2016-12"）
+      required: true
+      type: string
+  responses:
+    200:
+      description: |
+        各月最初の日曜日を一ヶ月の始点とし、毎土曜日23:59時点の身長／体重から算出されるBMIを返す。
+        ユーザー登録日の前週以前と、現在週の翌週以降は取得結果に含まれない。
+
+        例：2016-11～2016-12の週別のBMIと体重を取得する。
+        - 条件
+          - ユーザー登録日：2016-11-16
+          - API実行日：2016-12-09
+        - 結果
+          - 下記が返る
+            - "2016-11-19T23:59+09:00"時点のBMIと体重
+            - "2016-11-26T23:59+09:00"時点のBMIと体重
+            - "2016-12-03T23:59+09:00"時点のBMIと体重
+        - 備考：
+          -  2016-11-19, 2016-11-26, 2016-12-03は土曜日
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/ActivityWeeklyBmiRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

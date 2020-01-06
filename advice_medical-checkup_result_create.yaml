@@ -1,0 +1,231 @@
+post:
+  summary: 健診結果登録API
+  description: |
+    [処理概要]
+
+    - 検証済み健診結果項目をパラメータに、JMDC社の健康年齢情報登録APIを呼び、JMDCサーバーに健診結果項目を登録する。
+    - サービスマスタの健診結果情報登録APIを呼び、サービスマスタに健診結果項目(健診受診日、健康年齢(健康年齢区分)、健康タイプ、
+      健診結果判定フラグ)を登録する。
+
+    [呼出理由]
+
+    - 検証済み健診結果項目をJMDCサーバー、サービスマスタに登録する為。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                     | エラーメッセージ           |
+    |----|--------|--------------------------------|----------------------------|
+    | 1  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/28
+      - リクエストの「visitDate」を「meddata.visitdate」に修正
+      - リクエストの「genderCode」を「meddata.gender」に修正
+      - リクエストの「age」を「meddata.age」に修正
+      - リクエストの「height」を「meddata.height」に修正
+      - リクエストの「weight」を「meddata.weight」に修正
+      - リクエストの「bmi」を「meddata.bmi」に修正
+      - リクエストの「systolicBloodPressure」を「meddata.ch014」に修正
+      - リクエストの「diastolicBloodPressure」を「meddata.ch016」に修正
+      - リクエストの「neutralFat」を「meddata.ch019」に修正
+      - リクエストの「hdlCholesterol」を「meddata.ch021」に修正
+      - リクエストの「ldlCholesterol」を「meddata.ch023」に修正
+      - リクエストの「ast」を「meddata.ch025」に修正
+      - リクエストの「alt」を「meddata.ch027」に修正
+      - リクエストの「gammaGt」を「meddata.ch029」に修正
+      - リクエストの「fastingBloodSugar」を「meddata.ch035_fblood_glucose」に修正
+      - リクエストの「hba1c」を「meddata.ch035」に修正
+      - リクエストの「urinaryProtein」を「meddata.ch039」に修正
+      - リクエストにid、meddata、meddata.healthageを追加
+      - リクエストのurinarySugarを削除
+      - レスポンスにid、statusを追加
+    - v1.0.3 2017/05/17 リクエストパラメータを下記のように修正(https://rdm026001.acnshared.com/redmine/issues/6852)
+      - 「meddata.visitdate」を「visitDate」に修正
+      - 「meddata.gender」を「genderCode」に修正
+      - 「meddata.age」を「age」に修正
+      - 「meddata.height」を「height」に修正
+      - 「meddata.weight」を「weight」に修正
+      - 「meddata.bmi」を「bmi」に修正
+      - 「meddata.ch014」を「ch014」に修正
+      - 「meddata.ch016」を「ch016」に修正
+      - 「meddata.ch019」を「ch019」に修正
+      - 「meddata.ch021」を「ch021」に修正
+      - 「meddata.ch023」を「ch023」に修正
+      - 「meddata.ch025」を「ch025」に修正
+      - 「meddata.ch027」を「ch027」に修正
+      - 「meddata.ch029」を「ch029」に修正
+      - 「meddata.ch035_fblood_glucose」を「ch035_fblood_glucose」に修正
+      - 「meddata.ch035」を「ch035」に修正
+    - v1.0.4 2017/05/22 リクエストのidを削除
+    - v1.0.5 2017/05/24 健診受信日の例を修正
+    - v1.0.6 2017/07/27 エラーメッセージを追加。
+    - v1.0.7 2017/08/08 バリデーションエラーNo.1を削除し、レスポンスパラメータで返却するように修正。
+    - v2.0.1 2017/12/05 健診結果判定フラグをサービスマスタへの登録する旨を追記。
+  operationId: adviceMedicalCheckupResultCreate
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: body
+      name: adviceResultCreateBody
+      description: |
+        登録する健診結果を指定する。
+      required: true
+      schema:
+        required:
+          - meddata
+        properties:
+          meddata:
+            type: array
+            description: |
+              健診登録データ
+            items:
+              type: object
+              required:
+                - healthage
+                - visitdate
+                - gender
+                - age
+                - height
+                - weight
+                - bmi
+                - ch014
+                - ch016
+                - ch019
+                - ch021
+                - ch023
+                - ch025
+                - ch027
+                - ch029
+                - ch035_fblood_glucose
+                - ch035
+                - ch039
+              properties:
+                healthage:
+                  type: number
+                  format: float
+                  description: |
+                    健康年齢。小数点以下第二位。（例：32.45）
+                visitdate:
+                  type: string
+                  description: |
+                    健診受診日（例："2008/05/01"）
+                gender:
+                  type: integer
+                  format: int32
+                  enum:
+                    - 0
+                    - 1
+                  description: |
+                    性別
+                    - 0: 男性
+                    - 1: 女性
+                age:
+                  type: integer
+                  format: int32
+                  description: |
+                    年齢。(例：20)
+                height:
+                  type: number
+                  format: float
+                  description: |
+                    身長。単位：cm。小数点以下第一位。（例：170.6）
+                weight:
+                  type: number
+                  format: float
+                  description: |
+                    体重。単位：kg。小数点以下第一位。（例：60.5）
+                bmi:
+                  type: number
+                  format: float
+                  description: |
+                    BMI。小数点以下第一位。（例：23.5）
+                ch014:
+                  type: integer
+                  format: int32
+                  description: |
+                    収縮期血圧（例：135）
+                ch016:
+                  type: integer
+                  format: int32
+                  description: |
+                    拡張期血圧（例：135）
+                ch019:
+                  type: integer
+                  format: int32
+                  description: |
+                    中性脂肪（例：135）
+                ch021:
+                  type: number
+                  format: float
+                  description: |
+                    HDLコレステロール。小数点以下第一位。（例：23.5）
+                ch023:
+                  type: number
+                  format: float
+                  description: |
+                    LDLコレステロール。小数点以下第一位。（例：23.5）
+                ch025:
+                  type: integer
+                  format: int32
+                  description: |
+                    AST(GOT)。（例：10）
+                ch027:
+                  type: integer
+                  format: int32
+                  description: |
+                    ALT(GPT)。（例：10）
+                ch029:
+                  type: integer
+                  format: int32
+                  description: |
+                    γ-GT（γ-GTP)。（例：10）
+                ch035_fblood_glucose:
+                  type: integer
+                  format: int32
+                  description: |
+                    空腹時血糖。（例：10）
+                ch035:
+                  type: number
+                  format: float
+                  description: |
+                    HbA1c（NGSP）。小数点以下第一位。（例：23.5）
+                ch039:
+                  type: integer
+                  format: int32
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                  description: |
+                    尿蛋白（定性）。以下のいずれかを指定する
+
+                    - 1: －
+                    - 2: ±
+                    - 3: ＋
+                    - 4: ＋＋
+                    - 5: ＋＋＋
+  tags:
+
+    - Sprint3
+    - Sprint11
+    - all
+  responses:
+    200:
+      description: |
+        健診結果の登録結果を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AdviceMedicalCheckupResultCreate'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

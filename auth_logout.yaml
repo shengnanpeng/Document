@@ -1,0 +1,42 @@
+post:
+  summary: ログアウトAPI
+  description: |
+    ログアウト処理を実行する。
+
+    #### エラーメッセージ一覧
+    | No | 区分 | エラー条件 | エラーメッセージ |
+    |----|------|------------|------------------|
+    | 1  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/26 Sprint4に追加
+  operationId: authLogout
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+  tags:
+
+
+    - Sprint1-release
+    - Sprint4
+    - all
+  responses:
+    200:
+      description: ログアウト処理結果を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AuthLogout'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

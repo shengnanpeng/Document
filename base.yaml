@@ -1,21 +1,230 @@
-swagger: '2.0'
-info:
-  $ref: ./info/base.yaml
-# the domain of the service
-host: \@HOST@
-# array of all schemes that your API supports
-schemes:
-  - https
-  - http
-basePath:
-  /adep
-consumes:
-  - application/json
-produces:
-  - application/json
-paths:
-  $ref: ./paths/base.yaml
-definitions:
-  $ref: ./definitions/base.yaml
-parameters:
-  $ref: ./parameters/base.yaml
+/auth/login:
+  $ref: ./auth_login.yaml
+/auth/password/update:
+  $ref: ./auth_password_update.yaml
+/auth/password/onetime-token/create:
+  $ref: ./auth_password_onetime-token_create.yaml
+/auth/password/onetime-token/check:
+  $ref: ./auth_password_onetime-token_check.yaml
+/auth/password/reset:
+  $ref: ./auth_password_reset.yaml
+/auth/password/check:
+  $ref: ./auth_password_check.yaml
+/auth/logout:
+  $ref: ./auth_logout.yaml
+/auth/contractor/sso:
+  $ref: ./auth_contractor_sso.yaml
+/account/own/create:
+  $ref: ./account_own_create.yaml
+/account/own/update:
+  $ref: ./account_own_update.yaml
+/account/resign:
+  $ref: ./account_resign.yaml
+/notification/list/retrieve:
+  $ref: ./notification_list_retrieve.yaml
+/notification/detail/retrieve:
+  $ref: ./notification_detail_retrieve.yaml
+/notification/whats-new/count:
+  $ref: ./notification_whats-new_count.yaml
+/notification/popup/retrieve:
+  $ref: ./notification_popup_retrieve.yaml
+/notification/popup-status/update:
+  $ref: ./notification_popup-status_update.yaml
+/coupon/list/retrieve:
+  $ref: ./coupon_list_retrieve.yaml
+/coupon/detail/retrieve:
+  $ref: ./coupon_detail_retrieve.yaml
+/coupon/my-list/retrieve:
+  $ref: ./coupon_mylist_retrieve.yaml
+/coupon/my-list/exchange:
+  $ref: ./coupon_mylist_exchange.yaml
+/coupon/apply:
+  $ref: ./coupon_apply.yaml
+/coupon/use:
+  $ref: ./coupon_use.yaml
+/account/invitation/create:
+  $ref: ./account_invitation_create.yaml
+/coupon/lottery-result/retrieve:
+  $ref: ./coupon_lottery-result_retrieve.yaml
+/coupon/realtime-lottery-result/retrieve:
+  $ref: ./coupon_realtime-lottery-result_retrieve.yaml
+/activity/info/create:
+  $ref: ./activity_info_create.yaml
+/activity/last-sync/retrieve:
+  $ref: ./activity_lastsync-date_retrieve.yaml
+/activity/daily/step/retrieve:
+  $ref: ./activity_daily_step_retrieve.yaml
+/device/push-notification-token/update:
+  $ref: ./device_push-notification-token_update.yaml
+/logging/operation/create:
+  $ref: ./logging_operation_create.yaml
+/activity/daily-calorie-consumption/retrieve:
+  $ref: ./activity_daily-calorie-consumption_retrieve.yaml
+/coupon/lottery-ticket/retrieve:
+  $ref: ./coupon_lottery-ticket_retrieve.yaml
+/activity/weekly-bmi/retrieve:
+  $ref: ./activity_weekly-bmi_retrieve.yaml
+/activity/activity-report/retrieve:
+  $ref: ./activity_activity-report_retrieve.yaml
+/campaign/list/retrieve:
+  $ref: ./campaign_list_retrieve.yaml
+/home/retrieve:
+  $ref: ./home_retrieve.yaml
+#/content/column/create:
+#  $ref: ./content_column_create.yaml
+#/content/recipe/create:
+#  $ref: ./content_recipe_create.yaml
+
+
+/common/contract-validity/check:
+  $ref: ./common_contract-validity_check.yaml
+/common/password-validity/check:
+  $ref: ./common_password-validity_check.yaml
+/common/time/retrieve:
+  $ref: ./common_time_retrieve.yaml
+/common/content-image/retrieve:
+  $ref: ./common_content-image_retrieve.yaml
+/common/content-status/update:
+  $ref: ./common_content-status_update.yaml
+/common/task-completion/update:
+  $ref: ./common_task-completion_update.yaml
+
+/apptop/retrieve:
+  $ref: ./apptop_retrieve.yaml
+/apptop/monthly-history/retrieve:
+  $ref: ./apptop_monthly-history_retrieve.yaml
+
+/auth/password/create:
+  $ref: ./auth_password_create.yaml
+/activity/tracking-device/create:
+  $ref: ./activity_tracking-device_create.yaml
+/activity/tracking-device/retrieve:
+  $ref: ./activity_tracking-device_retrieve.yaml
+
+/setting/enrollee/check:
+  $ref: ./setting_enrollee_check.yaml
+/setting/insured-list/retrieve:
+  $ref: ./setting_insured-list_retrieve.yaml
+/setting/insured/invite:
+  $ref: ./setting_insured_invite.yaml
+/setting/contractor-email/retrieve:
+  $ref: ./setting_contractor-email_retrieve.yaml
+/setting/contractor-email/update:
+  $ref: ./setting_contractor-email_update.yaml
+/setting/family/update:
+  $ref: ./setting_family_update.yaml
+/setting/family/list/retrieve:
+  $ref: ./setting_family_list_retrieve.yaml
+/setting/url/check:
+  $ref: ./setting_url_check.yaml
+/setting/email/update:
+  $ref: ./setting_email_update.yaml
+/setting/family/invite:
+  $ref: ./setting_family_invite.yaml
+
+/account/own/retrieve:
+  $ref: ./account_own_retrieve.yaml
+
+/setting/email-update/password/check:
+  $ref: ./setting_email-update_password_check.yaml
+/advice/medical-checkup/previous-checkup-date/retrieve:
+  $ref: ./advice_medical-checkup_previous-checkup-date_retrieve.yaml
+/advice/medical-checkup/result/retrieve:
+  $ref: ./advice_medical-checkup_result_retrieve.yaml
+/advice/medical-checkup/input-data/valid:
+  $ref: ./advice_medical-checkup_input-data_valid.yaml
+/advice/bmi-simulation/retrieve:
+  $ref: ./advice_bmi-simulation_retrieve.yaml
+/advice/medical-checkup/advice/retrieve:
+  $ref: ./advice_medical-checkup_advice_retrieve.yaml
+/advice/medical-checkup/result/create:
+  $ref: ./advice_medical-checkup_result_create.yaml
+/advice/health-type/retrieve:
+  $ref: ./advice_health-type_retrieve.yaml
+/advice/health-dictionary/retrieve:
+  $ref: ./advice_health-dictionary_retrieve.yaml
+/advice/health-age/compute:
+  $ref: ./advice_health-age_compute.yaml
+
+
+/coupon/winning-ticket/retrieve:
+  $ref: ./coupon_winning-ticket_retrieve.yaml
+/column/detail/retrieve:
+  $ref: ./column_detail_retrieve.yaml
+/column/list/retrieve:
+  $ref: ./column_list_retrieve.yaml
+/column/bookmark:
+  $ref: ./column_bookmark.yaml
+
+/cms/contents/receive:
+  $ref: ./cms_contents_receive.yaml
+
+/mkt/campaign/receive:
+  $ref: ./mkt_campaign_receive.yaml
+
+/recipe/list/retrieve:
+  $ref: ./recipe_list_retrieve.yaml
+/recipe/detail/retrieve:
+  $ref: ./recipe_detail_retrieve.yaml
+
+/auth/secret-question/check:
+  $ref: ./auth_secret-question_check.yaml
+
+/disease-risk-check/input-data/retrieve:
+  $ref: ./disease-risk-check_input-data_retrieve.yaml
+/disease-risk-check/input-data/update:
+  $ref: ./disease-risk-check_input-data_update.yaml
+/disease-risk-check/simulate:
+  $ref: ./disease-risk-check_simulate.yaml
+/disease-risk-check/check-date/retrieve:
+  $ref: ./disease-risk-check_check-date_retrieve.yaml
+/calorie-check/meal-photo/analyze:
+  $ref: ./calorie-check_meal-photo_analyze.yaml
+/calorie-check/meal-menu/keyword/retrieve:
+  $ref: ./calorie-check_meal-menu_keyword_retrieve.yaml
+/calorie-check/beware-nutrient/update:
+  $ref: ./calorie-check_beware-nutrient_update.yaml
+
+/medicine-notebook/account/create:
+  $ref: ./medicine-notebook_account_create.yaml
+/medicine-notebook/dispensing-completion/send:
+  $ref: ./medicine-notebook_dispensing-completion_send.yaml
+/medicine-notebook/medication-remind/send:
+  $ref: ./medicine-notebook_medication-remind_send.yaml
+/medicine-notebook/ambulatory-remind/send:
+  $ref: ./medicine-notebook_ambulatory-remind_send.yaml
+
+/calorie-check/meal-advice/retrieve:
+  $ref: ./calorie-check_meal-advice_retrieve.yaml
+
+/redirect:
+  $ref: ./redirect.yaml
+
+/common/faceai-status/update:
+  $ref: ./common_faceai-status_update.yaml
+
+/common/rebornmagic-session-key/retrieve:
+  $ref: ./common_rebornmagic-session-key_retrieve.yaml
+
+/help/faq/list/retrieve:
+  $ref: ./help_faq_list_retrieve.yaml
+/help/faq/detail/retrieve:
+  $ref: ./help_faq_detail_retrieve.yaml
+#/cms/help/detail/retrieve:
+#  $ref: ./cms_help_detail_retrieve.yaml
+#/device/info/retrieve:
+#  $ref: ./device_info_retrieve.yaml
+#/common/version/retrieve:
+#  $ref: ./common_version_retrieve.yaml
+
+/setting/initial-registration-progress/retrieve:
+  $ref: ./setting_initial-registration-progress_retrieve.yaml
+/setting/initial-registration-progress/create:
+  $ref: ./setting_initial-registration-progress_create.yaml
+/help/faq/contact-mail/retrieve:
+  $ref: ./help_faq_contact-mail_retrieve.yaml
+/dev/auth-token/delete:
+  $ref: ./dev_auth-token_delete.yaml
+/coupon/lottery-result-status/update:
+  $ref: ./coupon_lottery-result-status_update.yaml
+

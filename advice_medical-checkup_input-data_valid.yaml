@@ -1,0 +1,190 @@
+post:
+  summary: 健診データ入力値検証API
+  description: |
+    [処理概要]
+
+    かざしOCRLibから出力された健診結果項目をパラメータに、JMDC社のバリデーションチェックAPIを呼び、チェック済みの健診結果項目を取得する。
+
+    [呼出理由]
+
+    かざしOCRLibから受領した健診結果項目の入力値検証を行う為。
+    読み取った健診データの入力値を検証する。
+
+    ***
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/18
+      - リクエストボディの各値の型をstringに修正
+      - レスポンスにvalidFlagとmessageを追加
+    - v1.0.3 2017/04/27
+      - リクエストの「visitDate」を「visitdate」に修正
+      - リクエストの「genderCode」を「gender」に修正
+      - リクエストの「systolicBloodPressure」を「ch014」に修正
+      - リクエストの「diastolicBloodPressure」を「ch016」に修正
+      - リクエストの「neutralFat」を「ch019」に修正
+      - リクエストの「hdlCholesterol」を「ch021」に修正
+      - リクエストの「ldlCholesterol」を「ch023」に修正
+      - リクエストの「ast」を「ch025」に修正
+      - リクエストの「alt」を「ch027」に修正
+      - リクエストの「gammaGt」を「ch029」に修正
+      - リクエストの「fastingBloodSugar」を「ch035_fblood_glucose」に修正
+      - リクエストの「hba1c」を「ch035」に修正
+      - リクエストの「urinaryProtein」を「ch039」に修正
+      - リクエストにidを追加
+      - リクエストのurinarySugarを削除
+      - リクエストのch035_fblood_glucose、ch035に説明を追記
+      - レスポンスの「visitDate」を「visitdate」に修正
+      - レスポンスの「genderCode」を「gender」に修正
+      - レスポンスの「systolicBloodPressure」を「ch014」に修正
+      - レスポンスの「diastolicBloodPressure」を「ch016」に修正
+      - レスポンスの「neutralFat」を「ch019」に修正
+      - レスポンスの「hdlCholesterol」を「ch021」に修正
+      - レスポンスの「ldlCholesterol」を「ch023」に修正
+      - レスポンスの「ast」を「ch025」に修正
+      - レスポンスの「alt」を「ch027」に修正
+      - レスポンスの「gammaGt」を「ch029」に修正
+      - レスポンスの「fastingBloodSugar」を「ch035_fblood_glucose」に修正
+      - レスポンスの「hba1c」を「ch035」に修正
+      - レスポンスの「urinaryProtein」を「ch039」に修正
+      - レスポンスにidを追加
+      - レスポンスのurinarySugar、validFlag、message、actualValueを削除
+    - v1.0.4 2017/05/01 エラーメッセージ一覧を修正
+    - v1.0.5 2017/05/17 不要なエラーメッセージを削除
+    - v1.0.6 2017/05/22 リクエストのidを削除
+  operationId: adviceMedicalCheckupInputDataValid
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: body
+      name: adviceMedicalCheckupInputDataValidBody
+      description: |
+        検証する健診データを指定する。
+        入力値を検証しない場合にはnullを指定する。
+      required: true
+      schema:
+        required:
+          - visitdate
+          - gender
+          - age
+          - height
+          - weight
+          - bmi
+          - ch014
+          - ch016
+          - ch019
+          - ch021
+          - ch023
+          - ch025
+          - ch027
+          - ch029
+          - ch035_fblood_glucose
+          - ch035
+          - ch039
+        properties:
+          visitdate:
+            type: string
+            description: |
+              健診受診日（例："2008/05/01"）
+          gender:
+            type: string
+            enum:
+              - "0"
+              - "1"
+            description: |
+              性別。下記のいずれかを指定する。
+
+              - "0": 男性
+              - "1": 女性
+          age:
+            type: string
+            description: |
+              年齢（例："20"）
+          height:
+            type: string
+            description: |
+              身長。単位：cm。小数点以下第一位。（例："170.6"）
+          weight:
+            type: string
+            description: |
+              体重。単位：kg。小数点以下第一位。（例："60.5"）
+          bmi:
+            type: string
+            description: |
+              BMI。小数点以下第一位。（例："23.5"）
+          ch014:
+            type: string
+            description: |
+              収縮期血圧。（例："130"）
+          ch016:
+            type: string
+            description: |
+              拡張期血圧。（例："60"）
+          ch019:
+            type: string
+            description: |
+              中性脂肪。（例："60"）
+          ch021:
+            type: string
+            description: |
+              HDLコレステロール。小数点以下第一位。（例："23.5"）
+          ch023:
+            type: string
+            description: |
+              LDLコレステロール。小数点以下第一位。（例："23.5"）
+          ch025:
+            type: string
+            description: |
+              AST(GOT)。（例："10"）
+          ch027:
+            type: string
+            description: |
+              ALT(GPT)。（例："10"）
+          ch029:
+            type: string
+            description: |
+              γ-GT（γ-GTP)。（例："10"）
+          ch035_fblood_glucose:
+            type: string
+            description: |
+              空腹時血糖。（例："10"）。空腹時血糖とhba1cは片方がnullになるケースがある
+          ch035:
+            type: string
+            description: |
+              HbA1c（NGSP）。小数点以下第一位。（例："23.5"）。空腹時血糖とhba1cは片方がnullになるケースがある
+          ch039:
+            type: string
+            enum:
+              - "1"
+              - "2"
+              - "3"
+              - "4"
+              - "5"
+            description: |
+              尿蛋白（定性）。下記のいずれかを指定する
+
+              - "1": －
+              - "2": ±
+              - "3": ＋
+              - "4": ＋＋
+              - "5": ＋＋＋
+  tags:
+
+    - Sprint3
+    - all
+  responses:
+    200:
+      description: |
+        健診結果の入力値検証結果を返す。検証対象外の項目値はnullを返却する。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AdviceMedicalCheckupInputDataValid'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

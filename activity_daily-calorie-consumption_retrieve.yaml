@@ -1,0 +1,69 @@
+get:
+  tags:
+
+    - Sprint1-release
+
+    - all
+  summary: 日別消費カロリー取得API
+  description: |
+    指定期間の日別の消費カロリーを取得する。消費カロリーは歩数／体重／身長に基づいて算出する。
+
+    取得結果のソート順は、下記とする。
+    1. 歩数の記録日の降順
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                         | エラーメッセージ                                                         |
+    |----|--------|----------------------------------------------------|--------------------------------------------------------------------------|
+    | 1  | fields | recordingDateFromが未指定の場合                    | @@Fieldは、必須項目です                                                  |
+    | 2  | fields | recordingDateFromが、ISO8601形式でない場合         | @@fieldの日付形式が不正です。ISO8601形式（YYYY-MM-DD）で指定してください |
+    | 3  | fields | recordingDateToが未指定の場合                      | @@Fieldは、必須項目です                                                  |
+    | 4  | fields | recordingDateToが、ISO8601形式でない場合           | @@fieldの日付形式が不正です。ISO8601形式（YYYY-MM-DD）で指定してください |
+    | 5  | global | recordingDateFromがrecordingDateTo以降の日付の場合 | 指定された期間が不正です                                                 |
+    | 6  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+  operationId: activityDailyCalorieConsumptionRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: query
+      name: recordingDateFrom
+      description: |
+        消費カロリー情報の取得開始日（ISO8601形式："2016-11-01"）
+      required: true
+      type: string
+    - in: query
+      name: recordingDateTo
+      description: |
+        消費カロリー情報の取得終了日（ISO8601形式："2016-11-06"）
+      required: true
+      type: string
+  responses:
+    200:
+      description: |
+        指定期間の日別の消費カロリーを返す。歩数未登録日は取得結果に含まれない。
+
+        例：2016-11-01～2016-11-10の消費カロリーを取得する。
+        - 条件
+          - アカウント登録日：2016-11-03
+          - 歩数未登録日：2016-11-08、2016-11-10
+          - API実行日：2016-11-10
+        - 取得結果
+          - 2016-11-03～2016-11-07、2016-11-09の消費カロリーを含む。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/ActivityDailyCalorieConsumptionRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

@@ -1,0 +1,157 @@
+post:
+  summary: 注意する栄養素更新API
+  description: |
+    [処理概要]
+    
+    測定結果画面（二次予防）の注意すべき栄養素を変更した際に値を更新する
+    
+    ※一次予防画面と二次予防画面の画面の振り分けはモバイル側で行う
+    
+    [呼出理由]
+    
+    注意すべき栄養素を更新する
+    
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                     | エラーメッセージ                    |
+    |----|--------|--------------------------------|-------------------------------------|
+    | 1  | global | proteinFlag、lipidFlag、carbohydrateFlag、calciumFlag、ironFlag、vitaminAFlag、vitaminEFlag、vitaminB1Flag、vitaminB2Flag、vitaminCFlag、dietaryFiberFlag、saturatedFattyAcidFlag、saltFlagのうち4つ以上がtrueの場合 | 注意するべき栄養素は3つまでしか選択できません |
+    | 2  | global | 運用で端末が利用停止された場合 | サービスをご利用できません          |
+
+    ***
+
+  operationId: calorieCheckBewareNutrientUpdate
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - $ref: '#/parameters/Authorization'
+    - in: body
+      name: calorieCheckBewareNutrientUpdateBody
+      required: true
+      description: |
+        注意する栄養素。最大3個の要素がtrueになる
+      schema:
+        required:
+          - proteinFlag
+          - lipidFlag
+          - carbohydrateFlag
+          - calciumFlag
+          - ironFlag
+          - vitaminAFlag
+          - vitaminEFlag
+          - vitaminB1Flag
+          - vitaminB2Flag
+          - vitaminCFlag
+          - dietaryFiberFlag
+          - saturatedFattyAcidFlag
+          - saltFlag
+        properties:
+          proteinFlag:
+            type: boolean
+            description: |
+               たんぱく質フラグ
+               - true: 選択
+               - false: 未選択
+          lipidFlag:
+            type: boolean
+            description: |
+               脂質フラグ
+               - true: 選択
+               - false: 未選択
+          carbohydrateFlag:
+            type: boolean
+            description: |
+               炭水化物フラグ
+               - true: 選択
+               - false: 未選択
+          calciumFlag:
+            type: boolean
+            description: |
+               カルシウムフラグ
+               - true: 選択
+               - false: 未選択
+          ironFlag:
+            type: boolean
+            description: |
+               鉄フラグ
+               - true: 選択
+               - false: 未選択
+          vitaminAFlag:
+            type: boolean
+            description: |
+               ビタミンAフラグ
+               - true: 選択
+               - false: 未選択
+          vitaminEFlag:
+            type: boolean
+            description: |
+               ビタミンEフラグ
+               - true: 選択
+               - false: 未選択
+          vitaminB1Flag:
+            type: boolean
+            description: |
+               ビタミンB1フラグ
+               - true: 選択
+               - false: 未選択
+          vitaminB2Flag:
+            type: boolean
+            description: |
+               ビタミンB2フラグ
+               - true: 選択
+               - false: 未選択
+          vitaminCFlag:
+            type: boolean
+            description: |
+               ビタミンCフラグ
+               - true: 選択
+               - false: 未選択
+          dietaryFiberFlag:
+            type: boolean
+            description: |
+               食物繊維フラグ
+               - true: 選択
+               - false: 未選択
+          saturatedFattyAcidFlag:
+            type: boolean
+            description: |
+               飽和脂肪酸フラグ
+               - true: 選択
+               - false: 未選択
+          saltFlag:
+            type: boolean
+            description: |
+               塩分フラグ
+               - true: 選択
+               - false: 未選択
+        example:
+          proteinFlag: true
+          lipidFlag: false
+          carbohydrateFlag: false
+          calciumFlag: false
+          ironFlag: true
+          vitaminAFlag: false
+          vitaminEFlag: false
+          vitaminB1Flag: false
+          vitaminB2Flag: false
+          vitaminCFlag: true
+          dietaryFiberFlag: false
+          saturatedFattyAcidFlag: false
+          saltFlag: false
+  tags:
+
+    - all
+    - Sprint4
+  responses:
+    200:
+      description: 注意する栄養素対象。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/CalorieCheckBewareNutrientUpdate'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

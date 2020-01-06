@@ -1,0 +1,43 @@
+get:
+  summary:  前回健診受診日取得API
+  description: |
+    [処理概要]
+
+    Coreサーバーの健診管理テーブルから、健診最終受診日を取得する。
+
+    [呼出理由]
+
+    健診結果登録状況（未登録/登録済）で、健診結果取得APIか簡易健康年齢取得APIを呼ぶか判断する為。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                   | エラーメッセージ           |
+    |----|--------|------------------------------|----------------------------|
+    | 1  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+  operationId: adviceMedicalCheckupPreviousCheckupDateRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+  tags:
+
+    - Sprint3
+    - all
+  responses:
+    200:
+      description: 前回の健診受診日を返す。未登録の場合はnullを返却する
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AdviceMedicalCheckupPreviousCheckupDateRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

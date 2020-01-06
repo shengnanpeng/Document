@@ -1,0 +1,176 @@
+post:
+  summary: 健康年齢算出API
+  description: |
+    [処理概要]
+    - 健診データから健康年齢を取得する
+    - 健康年齢算出APIはかざしOCRの結果確認画面からしか呼ばれない
+
+    [呼出理由]
+    - 健康年齢を取得するため
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                                         | エラーメッセージ                                    |
+    |----|--------|--------------------------------------------------------------------|-----------------------------------------------------|
+    | 1  | global | 運用で端末が利用停止された場合                                     | サービスをご利用できません                          |
+
+    ***
+    - v1.0.1 2017/04/27
+      - リクエストの「systolicBloodPressure」を「ch014」に修正
+      - リクエストの「diastolicBloodPressure」を「ch016」に修正
+      - リクエストの「neutralFat」を「ch019」に修正
+      - リクエストの「hdlCholesterol」を「ch021」に修正
+      - リクエストの「ldlCholesterol」を「ch023」に修正
+      - リクエストの「ast」を「ch025」に修正
+      - リクエストの「alt」を「ch027」に修正
+      - リクエストの「gammaGt」を「ch029」に修正
+      - リクエストの「fastingBloodSugar」を「ch035_fblood_glucose」に修正
+      - リクエストの「hba1c」を「ch035」に修正
+      - リクエストの「urinaryProtein」を「ch039」に修正
+      - Implementation Notesを追記
+      - レスポンスの「responseStatus」を「status」に修正
+      - レスポンスの「healthAge」を「healthage」に修正
+      - リクエストのch035_fblood_glucose、ch035に説明を追記
+    - v1.0.2 2017/05/01 「visitDate」を「visitdate」に修正
+    - v1.0.3 2017/05/22 リクエストのidを削除
+    - v1.0.4 2017/08/14 レスポンスに健康年齢区分を追加
+  operationId: adviceHealthAgeCompute
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - $ref: '#/parameters/Authorization'
+    - in: body
+      name: medicalCheckupDataBody
+      description: |
+        健康年齢算出に必要なデータを渡す。
+      required: true
+      schema:
+        required:
+          - visitdate
+          - gender
+          - age
+          - height
+          - weight
+          - bmi
+          - ch014
+          - ch016
+          - ch019
+          - ch021
+          - ch023
+          - ch025
+          - ch027
+          - ch029
+          - ch035_fblood_glucose
+          - ch035
+          - ch039
+        properties:
+          visitdate:
+            type: string
+            description: |
+              健診受診日。（ISO8601形式： "2017-12-31"）
+          gender:
+            type: integer
+            format: int32
+            description: |
+              性別
+              - 0：男性
+              - 1：女性
+          age:
+            type: integer
+            format: int32
+            description: |
+              年齢
+          height:
+            type: number
+            format: float
+            description: |
+              身長
+          weight:
+            type: number
+            format: float
+            description: |
+              体重
+          bmi:
+            type: number
+            format: float
+            description: |
+              BMI
+          ch014:
+            type: integer
+            format: int32
+            description: |
+              収縮期血圧
+          ch016:
+            type: integer
+            format: int32
+            description: |
+              拡張期血圧
+          ch019:
+            type: integer
+            format: int32
+            description: |
+              中性脂肪
+          ch021:
+            type: integer
+            format: int32
+            description: |
+              HDLコレステロール
+          ch023:
+            type: integer
+            format: int32
+            description: |
+              LDLコレステロール
+          ch025:
+            type: integer
+            format: int32
+            description: |
+              GOT(AST)
+          ch027:
+            type: integer
+            format: int32
+            description: |
+              GPT(ALT)
+          ch029:
+            type: integer
+            format: int32
+            description: |
+              γ-GT（γ-GTP)
+          ch035_fblood_glucose:
+            type: integer
+            format: int32
+            description: |
+              空腹時血糖。空腹時血糖とhba1cは片方がnullになるケースがある
+          ch035:
+            type: number
+            format: float
+            description: |
+              HbA1c（NGSP）。空腹時血糖とhba1cは片方がnullになるケースがある
+          ch039:
+            type: integer
+            format: int32
+            description: |
+              尿蛋白（定性）
+              - 1：－
+              - 2：±
+              - 3：＋
+              - 4：＋＋
+              - 5：＋＋＋
+
+  tags:
+
+    - all
+    - Sprint3
+  responses:
+    200:
+      description: |
+        健康年齢を取得する。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AdviceHealthAgeCompute'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

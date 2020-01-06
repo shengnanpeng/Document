@@ -1,0 +1,62 @@
+post:
+  summary: アカウント新規登録API
+  description: |
+    ユーザーのアカウントを新規登録する。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                 | エラーメッセージ                                      |
+    |----|--------|--------------------------------------------|-------------------------------------------------------|
+    | 1  | fields | emailが3文字未満、または50文字を超える場合 | メールアドレスは3文字以上50文字以下で入力してください |
+    | 2  | fields | emailがRFC5322形式に準拠しない場合         | メールアドレス形式が不正です                          |
+    | 3  | fields | emailが未指定の場合                        | メールアドレスは必須項目です                          |
+    | 4  | global | 運用で端末が利用停止された場合             | サービスをご利用できません                            |
+ 
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    - v0.2.2 2017/02/08 emailがRFC5322に準拠しない場合のエラーメッセージを追加
+    - v1.0.1 2017/03/23 openIdType、openIdAccessTokenを削除。また、エラーメッセージとImplementation NotesのOpenIDに関する記述を削除
+    - v1.0.2 2017/03/23 「emailが3文字未満、または50文字を超える場合」と「運用で端末停止された場合」のエラーメッセージを修正
+    - v1.0.3 2017/04/04 レスポンスの認証トークンの記載を削除。リクエストヘッダにCompanyCodeを追加
+    - v1.0.4 2017/04/27 Sprint4に追加
+    - v1.0.5 2017/04/28 エラーメッセージ一覧を修正
+    - v1.0.6 2017/05/08 Implementation Notesの説明を修正
+
+  operationId: accountOwnCreate
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: body
+      name: accountOwnCreateBody
+      description: アカウント新規登録で必要なユーザの情報
+      required: true
+      schema:
+        properties:
+          email:
+            type: string
+            description: 登録メールアドレス
+            minLength: 3
+            maxLength: 50
+  tags:
+
+
+    - Sprint1-release
+    - Sprint3
+    - Sprint4
+    - all
+  responses:
+    200:
+      description: アカウント新規登録結果を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AccountOwnCreate'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

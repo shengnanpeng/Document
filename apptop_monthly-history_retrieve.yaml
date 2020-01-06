@@ -1,0 +1,77 @@
+get:
+  summary: 月間活動履歴取得API
+  description: |
+    [処理概要]
+    - Coreサーバのタスク完了履歴から対象年月の4タスク達成日数を取得する
+    - Coreサーバのタスク完了履歴から対象年月の3タスク達成日数を取得する（4タスク達成日数は含めない）
+    - Coreサーバのタスク完了履歴から「学ぶ」タスク達成日数を取得する
+    - Coreサーバのタスク完了履歴から「食べる」タスク達成日数を取得する
+    - Coreサーバのタスク完了履歴から「ベースを整える」タスク達成日数を取得する
+    - Coreサーバのタスク完了履歴から「歩く」タスク、または「ログイン」タスクの達成日数を取得する
+    - Coreサーバの本格抽選券テーブルから「発券理由タイプ」が「家族紹介」かつ「発券日時」が対象年月のレコードの「数量」を取得する
+    - Coreサーバの本格抽選券テーブルから「発券理由タイプ」が「健診結果提出」かつ「発券日時」が対象年月のレコードの「数量」を取得する
+    - Coreサーバのタスク完了履歴テーブルの対象年月の「記録日」、「歩く」or「ログイン達成フラグ」、「学ぶ達成フラグ」、「食べる達成フラグ」、「ベースを整えるフラグ」を取得する
+
+    [呼出理由]
+    月間活動履歴画面に4タスク達成日数、3タスク達成日数、「歩く」達成日数、「学ぶ」達成日数、「食べる」達成日数、「ベースを整える」達成日数、家族招待獲得クローバー数、健診結果登録獲得クローバー数、各日の達成状況を表示するため
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                                         | エラーメッセージ                                    |
+    |----|--------|---------------------------------------------------------------------|-----------------------------------------------------|
+    | 1  | fields | targetYearMonthが未指定の場合                    | @@Fieldは、必須項目です                                                  |
+    | 2  | fields | targetYearMonthが、ISO8601形式でない場合         | @@fieldの日付形式が不正です。ISO8601形式（YYYY-MM）で指定してください |
+    | 3  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v1.0.1 2017/04/04 レスポンスのキー名(stepAchievementResults)の誤記を修正。リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/26 「服薬」達成フラグ、「服薬」達成日数を「ログイン」達成フラグ、「ログイン」達成日数に変更
+    - v1.0.3 2017/08/30
+      - fourTaskCompletionResults, threeTaskCompletionResultsの「歩く」と「ログイン」達成日数を一体としてカウントするように修正
+      - loginCompletionResultsとstepAchievementResultsを統合し、stepOrLoginCompletionResultsとする
+      - loginCompletionFlagとstepAchievementFlagを統合し、stepOrLoginCompletionFlagとする
+
+  operationId: apptopMonthlyHistoryRetrieve
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - $ref: '#/parameters/Authorization'
+    - in: query
+      name: targetYearMonth
+      description: |
+        出力する月間活動履歴の対象年月（ISO8601形式: "2017-05"）
+      required: true
+      type: string
+
+  tags:
+
+    - all
+    - Sprint3
+  responses:
+    200:
+      description: |
+        月間活動履歴画面の以下の要素の指定月の達成状況を返却する
+        - 4タスク達成日数
+        - 3タスク達成日数（4タスク達成数は含めない）
+        - 「歩く」/「ログイン」達成日数（歩く、またはログインのタスクのいずれかを達成した日数）
+        - 「学ぶ」達成日数
+        - 「食べる」達成日数
+        - 「ベースを整える」達成日数
+        - 家族招待獲得クローバー数
+        - 健診結果登録獲得クローバー数
+        - 日数分の達成状況
+          - 日付
+          - 歩く/ログイン達成フラグ
+          - 学ぶ達成フラグ
+          - 食べる達成フラグ
+          - ベースを整える達成フラグ
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/ApptopMonthlyHistoryRetrieve'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

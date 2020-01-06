@@ -1,0 +1,87 @@
+get:
+  summary: キャンペーン一覧取得API
+  description: |
+    キャンペーン一覧を取得する。
+
+    キャンペーンのソート順は、下記とする。
+    
+    1. キャンペーン開始日時の昇順
+    2. キャンペーン開始日時が同日の場合、キャンペーンIDの昇順
+    
+    
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                   | エラーメッセージ           |
+    |----|--------|------------------------------|----------------------------|
+    | 1  | fields | AppModeCodeが01、02以外の場合 | アプリコードを正しく入力してください |
+    | 2  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    - v1.0.1 2017/04/04 キャンペーンIDの型をlongとした。リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/07 
+      - アウトプットにitemDetailsを追加
+      - インプットにアプリモードを追加
+    - v1.0.3 2017/04/11 
+      - Implementation Notesのソート順を修正
+      - アウトプットの商品画像URLを商品画像ファイル名に修正
+      - アウトプットの店舗画像URLを店舗画像ファイル名に修正
+      - アウトプットのperiodStartDateをpublishStartDateに修正
+      - アウトプットのperiodEndDateをpublishEndDateに修正
+    - v1.0.4 2017/04/13
+      - アウトプットのavailableStartDateをcampaignStartDateに修正
+      - アウトプットのavailableEndDateをcampaignEndDateに修正
+      - アウトプットの利用可能開始日時をキャンペーン開始日時に修正
+      - アウトプットの利用可能終了日時をキャンペーン終了日時に修正
+      - アウトプットのshopImage、itemDescription、itemDetailsを削除
+      - アウトプットのusage、notesを作成
+      - アウトプットの商品画像ファイル名をキャンペーン画像ファイル名に修正
+    - v1.0.5 2017/04/17
+      - アウトプットのcampaignUrlを削除
+    - v1.0.6 2017/06/19
+      - アウトプットにcampaignUrlを追加
+    - v2.0.1 2018/01/11
+      - アウトプットのbenefitTypeに以下項目値を追加
+        - 40:汎用特典
+      - アウトプットにexternalLotteryServiceTypeを追加
+        - 02:プチギフト
+  operationId: campainListRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: query
+      name: AppModeCode
+      description: |
+        アプリモード
+        - キャンペーンアプリ、本格アプリどちらの画面から呼ばれたかに対応する下記のコード値を指定する。
+          - "01":キャンペーンアプリ
+          - "02":本格アプリ
+      required: true
+      type: string
+
+  tags:
+
+
+    - Sprint1-release
+    - all
+    - Sprint3
+    - Sprint11
+  responses:
+    200:
+      description: |
+        キャンペーン一覧を返す。
+
+        キャンペーン掲載期間開始前、およびキャンペーン掲載期間終了後のキャンペーン情報は取得結果に含まれない。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/CampaignListRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

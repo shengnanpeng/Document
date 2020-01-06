@@ -1,0 +1,64 @@
+post:
+  summary: Myコラムお気に入り登録・解除API
+  description: |
+
+    [処理概要]
+
+    - 指定コラムがお気に入り未登録の場合: Coreサーバーのお気に入りコンテンツ管理テーブルに、下記データをインサートする。
+      - ユーザー管理番号：ログインユーザのユーザー管理番号
+      - コンテンツID：パラメータのコンテンツID
+      - ブックマーク日時：システム日時
+    - 指定コラムがお気に入り登録済の場合: Coreサーバーのお気に入りコンテンツ管理テーブルから、下記データをデリートする。
+      - ユーザー管理番号：ログインユーザのユーザー管理番号
+      - コンテンツID：パラメータ指定のコンテンツID
+
+    [呼出理由]
+
+    対象コラムをお気に入り登録/解除する為。
+    
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件       | エラーメッセージ     |
+    |----|--------|---------------------------------------------------------------------|----------------------------------------------------------------------------|
+    | 1  | fields | contentIdが未指定の場合                | コンテンツIDは、必須項目です    |
+    | 2  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+      - v1.0.1 2017/05/12 認証トークンヘッダ追加、バリデーションメッセージ追加
+      - v1.0.2 2017/05/16 不要なバリデーションメッセージ削除
+  operationId: columnBookmark
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - $ref: '#/parameters/Authorization'
+    - in: body
+      name: columnBookmarkBody
+      description: |
+        お気に入り登録／解除の対象となるコンテンツIDを指定する
+      required: true
+      schema:
+        required:
+          - contentId
+        properties:
+          contentId:
+            type: string
+            description: |
+              コラムのコンテンツID
+  tags:
+    - all
+    - Sprint4
+
+  responses:
+    200:
+      description: |
+        お気に入り登録／解除の結果を返す
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/ColumnBookmark'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

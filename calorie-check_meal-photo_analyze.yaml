@@ -1,0 +1,98 @@
+post:
+  summary: 食事画像解析API
+  description: |
+    [処理概要]
+
+    外部アカウントマスタのSOMCアカウントを取得する
+
+    - SOMCアカウントが存在しない場合、サービスマスタのユーザー情報照会APIを呼び、ユーザー情報を取得し、
+      取得したユーザ基本情報でSOMC様のユーザー初期登録APIを呼び、アカウントの初期登録を行う
+
+    トークンが期限切れ時のみ実施
+
+    - SOMC様のログインAPIを呼び、新しいトークンを発行する
+
+    上記処理完了後実施
+
+    - SOMC様の食事画像解析結果取得APIを呼び、選択した写真をSOMCに送信し、解析結果情報を取得する
+
+    ※候補メニューのソート順は、SOMC様からの返却値をそのまま使用する
+
+    ※mealTypeは以下の条件からCoreで判断する
+
+    - 条件の時間帯は下記となる
+
+      - 5:00:00-10:59:59：朝食
+
+      - 11:00:00-16:59:59：昼食
+
+      - 17:00:00-4:59:59：夕食
+
+    [呼出理由]
+
+    食事写真からメニュー情報を取得するため
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                     | エラーメッセージ                    |
+    |----|--------|--------------------------------|-------------------------------------|
+    | 1  | fields | photoDataが未指定の場合        | @@Fieldは必須項目です               |
+    | 2  | fields | mealDateが未指定の場合         | @@Fieldは必須項目です               |
+    | 3  | fields | mealDateが正しくない場合       | ご利用いただけない日付です          |
+    | 4  | global | 写真画像が大きすぎる場合       | 1.4MBまでのJPEG画像をご指定ください |
+    | 5  | global | 画像解析できない場合           | この写真は画像解析できません    |
+    | 6  | global | 運用で端末が利用停止された場合 | サービスをご利用できません          |
+
+    ***
+      - v1.0.1 2017/05/23
+        - レスポンスのmenusを配列型に修正し、dishIdをstring型に修正した。
+        - mealTypeのエラーメッセージを削除
+        - リクエストのmealDateを食事日時とした
+      - v1.0.2 2017/08/14
+        - No.5のエラーメッセージを修正
+      - v2.0.1 2018/01/04
+        - 外部アカウントマスタのSOMCアカウント取得処理を変更
+
+  operationId: calorieCheckMealPhotoAnalyze
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - $ref: '#/parameters/Authorization'
+    - in: body
+      name: calorieCheckMealPhotoAnalyzeBody
+      required: true
+      description: |
+        食事解析対象画像
+      schema:
+        required:
+          - photoData
+          - mealDate
+        properties:
+          photoData:
+            type: string
+            description: |
+              画像データ(BASE64)
+              - JPEG画像以外はエラー
+              - 推奨画像解像度 800 x 600
+          mealDate:
+            type: string
+            description: |
+              食事日時（ISO8601形式："2008-05-01T02:00:00+09:00"）
+  tags:
+
+    - all
+    - Sprint4
+    - Sprint11
+  responses:
+    200:
+      description: 食事画像解析結果。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/CalorieCheckMealPhotoAnalyze'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

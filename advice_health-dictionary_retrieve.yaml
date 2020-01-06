@@ -1,0 +1,58 @@
+get:
+  summary: 健診項目名辞書データ取得API
+  description: |
+    [処理概要]
+    - JMDC社のマッピング定義取得APIを呼びだし、必要な健診項目名辞書データを取得する
+
+    [呼出理由]
+    - 健診項目名辞書データを更新するため
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                                         | エラーメッセージ                                    |
+    |----|--------|--------------------------------------------------------------------|-----------------------------------------------------|
+    | 1  | global | 運用で端末が利用停止された場合                                     | サービスをご利用できません                          |
+
+    ***
+    - v1.0.1 2017/04/27
+      - リクエストの「mappingVersion」を「version」に修正
+      - レスポンスの「responseStatus」を「status」に修正 
+      - レスポンスの「serverTime」を「server_time」に修正
+      - レスポンスの「processingTime」を「processing_time」に修正
+      - レスポンスの「errorDetail」を「error」に修正
+      - レスポンスの「responseResult」を「result」に修正
+      - レスポンスの「mappingId」を「mapping_id」に修正
+      - レスポンスの「mappingName」を「mapping_name」に修正
+      - レスポンスの「aliasName1」を「alias_name1」に修正
+      - レスポンスの「aliasName2」を「alias_name2」に修正
+      
+  operationId: adviceHealthDictionaryRetrieve
+  parameters:
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - $ref: '#/parameters/Authorization'
+    - in: query
+      name: version
+      description: |
+        マッピング定義バージョン。未指定の場合、最新バージョンを取得する。
+      required: false
+      type: string
+
+  tags:
+
+    - all
+    - Sprint3
+  responses:
+    200:
+      description: |
+        健診項目名辞書データを取得する。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/AdviceHealthDictionaryRetrieve'
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

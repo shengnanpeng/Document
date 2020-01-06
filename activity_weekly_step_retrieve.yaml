@@ -1,0 +1,72 @@
+get:
+  tags:
+
+
+    - Sprint1-release
+    - all
+
+  summary: 週別歩数取得API
+  description: |
+    指定期間の週ごとの歩数を取得する。
+
+    週の単位は日曜日～土曜日とする。
+
+    取得結果のソート順は、下記とする。
+    1. 記録日の降順
+
+    #### エラーメッセージ一覧
+    | No | 区分 | エラー条件 | エラーメッセージ |
+    |----|------|------------|------------------|
+    | 1  | global | 運用で端末が利用停止された場合 | サービスをご利用できません |
+
+    ***
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+
+    - v1.0.1 2017/04/04 リクエストヘッダにCompanyCodeを追加
+  operationId: activityWeeklyStepRetrieve
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: query
+      name: recordingDateFrom
+      description: |
+        歩数情報の取得開始日（ISO8601形式："2016-11-01"）
+      required: true
+      type: string
+    - in: query
+      name: recordingDateTo
+      description: |
+        歩数情報の取得終了日（ISO8601形式："2016-11-15"）
+      required: true
+      type: string
+  responses:
+    200:
+      description: |
+        指定期間の週ごとの歩数を返す。取得結果は下記に従う。
+        1. ユーザー登録日より過去の結果は含まれない。
+        2. 歩数未登録週はnull（歩）とする。
+        3. 指定した取得開始日を含む週の日曜日から歩数を取得する。
+        4. 指定した取得終了日を含む週の土曜日まで歩数を取得する。
+
+        例：2016-10-25～2016-11-10の週ごとの歩数を取得する。
+        - 条件
+          - ユーザー登録日：2016-11-03
+          - 歩数未登録日：2016-11-04～2016-11-12
+        - 結果
+          - 2016-10-30～2016-11-12の週ごとの歩数（2016-11-06～2016-11-12はnull）が返る。
+        - 備考：
+          - 2016-10-30、2016-11-06は日曜日
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/ActivityWeeklyStepRetrieve'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml

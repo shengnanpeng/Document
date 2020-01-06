@@ -1,0 +1,166 @@
+post:
+  tags:
+
+
+    - Sprint1-release
+    - all
+    - Sprint3
+
+  summary: アクティビティデータ登録API
+  description: |
+    [処理概要]
+
+    活動量計から取得したアクティビティデータを登録し、
+
+    アクティビティ登録日の歩数合計が、目標歩数を達成したか否かを応答する。
+
+    syncDateが最終登録日時より過去の場合はエラーを返す。
+
+    同一recordingDateが指定された場合、同一recordingHourのデータが既にあれば上書きし、無ければ追加登録する。
+
+    - キャンペーンモードで目標達成した場合
+      - 歩いて特典のスタンプを発行するため、抽選券テーブルに抽選タイプ：「週次」のレコードを登録する
+    - 本格アプリモードで目標達成した場合
+      - タスク完了履歴テーブルにタスク区分：「歩く」のレコードを登録する
+      - 3タスク完了となった場合
+        - 本格抽選券テーブルに発券理由タイプ：「タスク完了」、単位タイプ：「三つ葉」のレコードを登録する
+      - 4タスク完了となった場合
+        - 本格抽選券テーブルに発券理由タイプ：「タスク完了」、単位タイプ：「四つ葉」のレコードを登録する
+
+    [呼出理由]
+
+    アクティビティデータを登録し、目標達成したか否かを取得するため。
+
+    #### エラーメッセージ一覧
+    | No | 区分   | エラー条件                                 | エラーメッセージ                                                                     |
+    |----|--------|--------------------------------------------|--------------------------------------------------------------------------------------|
+    | 1  | fields | syncDateが未指定の場合                     | @@Fieldは、必須項目です                                                              |
+    | 2  | fields | syncDateが、ISO8601形式でない場合          | @@fieldの日時形式が不正です。ISO8601形式（YYYY-MM-DDThh:mm:ss）で指定してください    |
+    | 3  | fields | activityTypeが未指定の場合                 | @@Fieldは、必須項目です                                                              |
+    | 4  | fields | activityTypeが、1以外の場合                | @@Fieldは、1でなければなりません                                                     |
+    | 5  | fields | recordingDateが未指定の場合                | @@Fieldは、必須項目です                                                              |
+    | 6  | fields | recordingDateが、ISO8601形式でない場合     | @@fieldの日付形式が不正です。ISO8601形式（YYYY-MM-DD）で指定してください             |
+    | 7  | fields | recordingHourが未指定の場合                | @@Fieldは、必須項目です                                                              |
+    | 8  | fields | recordingHour、0 ~ 23以外の場合            | @@Fieldの範囲は、0以上23以下でなければなりません                                     |
+    | 9  | fields | quantityが未指定の場合                     | @@Fieldは、必須項目です                                                              |
+    | 10 | fields | quantityが0未満の場合                      | @@fieldは、0以上で入力してください                                                   |
+    | 11 | global | syncDateが、最終同期日時以前の日時の場合   | アクティビティデータ同期日時が不正です。前回同期日時より後の日時を指定してください。 |
+    | 12 | global | 運用で端末が利用停止された場合               | サービスをご利用できません                                                           |
+
+    ***
+    - v0.2.0 2016/12/07 アクティビティ登録日の合計歩数が、目標歩数を超えたか判定するためのオブジェクトを配列で応答する。
+    - v0.2.1 2017/01/24 端末利用停止の場合のエラー（403）を追加
+    - v1.0.1 2017/04/04 インプットの格納先テーブル、アウトプットの出力先テーブルを記載。リクエストヘッダにCompanyCodeを追加
+    - v1.0.2 2017/04/12 エラーメッセージ一覧を修正
+  operationId: activityInfoCreate
+  parameters:
+    - $ref: '#/parameters/Authorization'
+    - $ref: '#/parameters/AppVersion'
+    - $ref: '#/parameters/DeviceID'
+    - $ref: '#/parameters/CompanyCode'
+    - in: body
+      name: activityInfoCreateBody
+      description: |
+        登録するアクティビティデータ。quantityが0の時間帯は登録しない。
+      schema:
+        type: object
+        required:
+          - syncDate
+          - activityData
+        properties:
+          syncDate:
+            type: string
+            description: |
+              活動量計との同期日時（ISO8601形式："2008-05-01T02:00:00+09:00"）。この値が次回last-sync/retriveveで返却される。
+              - Coreサーバの端末マスタテーブルの「最終同期日時」に格納される
+          activityData:
+            type: array
+            items:
+              type: object
+              required:
+                - activityType
+                - recordingDate
+                - quantities
+              properties:
+                activityType:
+                  type: integer
+                  format: int32
+                  description: |
+                    アクティビティの種別を指定する。
+
+                    - 1: 歩数
+                  enum:
+                    - 1
+                recordingDate:
+                  type: string
+                  description: |
+                    アクティビティデータの登録対象日（ISO8601形式："2008-05-01"）
+                    - Coreサーバの歩数履歴テーブルの「記録日時」に格納される(日付部分のみ)
+                quantities:
+                  type: array
+                  description: |
+                    アクティビティデータの登録時間帯と量を指定する。
+                  items:
+                    type: object
+                    required:
+                      - recordingHour
+                      - quantity
+                    properties:
+                      recordingHour:
+                        type: integer
+                        format: int32
+                        minimum: 0
+                        maximum: 23
+                        description: |
+                          登録時間帯（単位：時）。（例：11）
+                          - Coreサーバの歩数履歴テーブルの「記録日時」に格納される(時間部分のみ)
+                      quantity:
+                        type: number
+                        format: float
+                        minimum: 0
+                        exclusiveMinimum: true
+                        description: |
+                          単位：歩。（例：10）
+                          - Coreサーバの歩数履歴テーブルの「歩数」に格納される
+        example:
+          syncDate: "2008-05-03T06:00:00+09:00"
+          activityData:
+            - activityType: 1
+              recordingDate: "2008-05-01"
+              quantities:
+                - recordingHour: 11
+                  quantity: 10
+                - recordingHour: 12
+                  quantity: 1000
+                - recordingHour: 13
+                  quantity: 3000
+                - recordingHour: 20
+                  quantity: 1000
+                - recordingHour: 21
+                  quantity: 2000
+            - activityType: 1
+              recordingDate: "2008-05-02"
+              quantities:
+                - recordingHour: 7
+                  quantity: 10
+                - recordingHour: 8
+                  quantity: 1000
+                - recordingHour: 12
+                  quantity: 3000
+                - recordingHour: 21
+                  quantity: 1000
+  responses:
+    200:
+      description: アクティビティデータの登録結果を返す。
+      headers:
+        $ref: ../definitions/x_server_date.yaml
+      schema:
+        $ref: '#/definitions/ActivityInfoCreate'
+    401:
+      $ref: ../definitions/error_401.yaml
+    403:
+      $ref: ../definitions/error_403.yaml
+    405:
+      $ref: ../definitions/error_405.yaml
+    503:
+      $ref: ../definitions/error_503.yaml
