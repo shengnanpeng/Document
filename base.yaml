@@ -1,0 +1,21 @@
+swagger: '2.0'
+info:
+  $ref: ./info/base.yaml
+# the domain of the service
+host: \@HOST@
+# array of all schemes that your API supports
+schemes:
+  - https
+  - http
+basePath:
+  /adep
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  $ref: ./paths/base.yaml
+definitions:
+  $ref: ./definitions/base.yaml
+parameters:
+  $ref: ./parameters/base.yaml
